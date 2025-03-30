@@ -4,108 +4,6 @@ import { Word } from '../../models';
 // For this example, we'll use a static dataset
 const literaryWords: Word[] = [
   {
-    id: '12',
-    value: 'tranquil',
-    definition: 'Free from disturbance; calm and peaceful',
-    partOfSpeech: 'adjective',
-    pronunciation: 'TRANG-kwil',
-    example: 'The tranquil lake reflected the mountains like a mirror.',
-    synonyms: ['peaceful', 'calm', 'serene', 'quiet', 'still'],
-    difficulty: 1,
-    etymology: 'From Latin tranquillus "quiet, calm"'
-  },
-  {
-    id: '13',
-    value: 'eloquent',
-    definition: 'Fluent or persuasive in speaking or writing',
-    partOfSpeech: 'adjective',
-    pronunciation: 'EL-uh-kwent',
-    example: 'Her eloquent speech moved the entire audience.',
-    synonyms: ['articulate', 'expressive', 'fluent', 'well-spoken', 'persuasive'],
-    difficulty: 1,
-    etymology: 'From Latin eloquentem, from eloqui "to speak out"'
-  },
-  {
-    id: '14',
-    value: 'diligent',
-    definition: 'Having or showing care and conscientiousness in one\'s work or duties',
-    partOfSpeech: 'adjective',
-    pronunciation: 'DIL-i-jent',
-    example: 'The diligent student always completed her assignments on time.',
-    synonyms: ['hardworking', 'industrious', 'careful', 'thorough', 'attentive'],
-    difficulty: 1,
-    etymology: 'From Latin diligentem "attentive, careful"'
-  },
-  {
-    id: '15',
-    value: 'benevolent',
-    definition: 'Well-meaning and kindly',
-    partOfSpeech: 'adjective',
-    pronunciation: 'buh-NEV-uh-lent',
-    example: 'The benevolent donor gave millions to charity.',
-    synonyms: ['kind', 'generous', 'charitable', 'altruistic', 'compassionate'],
-    difficulty: 1,
-    etymology: 'From Latin benevolens "wishing well, benevolent"'
-  },
-
-  // Difficulty Level 2 Words
-  {
-    id: '16',
-    value: 'ambiguous',
-    definition: 'Open to more than one interpretation; not having one obvious meaning',
-    partOfSpeech: 'adjective',
-    pronunciation: 'am-BIG-yoo-us',
-    example: 'His ambiguous response left us wondering what he really meant.',
-    synonyms: ['unclear', 'vague', 'equivocal', 'cryptic', 'obscure'],
-    difficulty: 2,
-    etymology: 'From Latin ambiguus "having double meaning, shifting"'
-  },
-  {
-    id: '17',
-    value: 'meticulous',
-    definition: 'Showing great attention to detail; very careful and precise',
-    partOfSpeech: 'adjective',
-    pronunciation: 'muh-TIK-yuh-lus',
-    example: 'The watchmaker was meticulous in assembling the tiny components.',
-    synonyms: ['precise', 'thorough', 'careful', 'fastidious', 'scrupulous'],
-    difficulty: 2,
-    etymology: 'From Latin meticulosus "fearful, timid"'
-  },
-  {
-    id: '18',
-    value: 'resilient',
-    definition: 'Able to withstand or recover quickly from difficult conditions',
-    partOfSpeech: 'adjective',
-    pronunciation: 'ri-ZIL-yent',
-    example: 'The resilient community quickly rebuilt after the hurricane.',
-    synonyms: ['tough', 'adaptable', 'hardy', 'flexible', 'buoyant'],
-    difficulty: 2,
-    etymology: 'From Latin resiliens, present participle of resilire "to rebound, recoil"'
-  },
-  {
-    id: '19',
-    value: 'pragmatic',
-    definition: 'Dealing with things sensibly and realistically in a way that is based on practical considerations',
-    partOfSpeech: 'adjective',
-    pronunciation: 'prag-MAT-ik',
-    example: 'We need a pragmatic approach to solving this problem.',
-    synonyms: ['practical', 'realistic', 'sensible', 'rational', 'reasonable'],
-    difficulty: 2,
-    etymology: 'From Greek pragmatikos "relating to fact"'
-  },
-  {
-    id: '20',
-    value: 'verbose',
-    definition: 'Using or containing more words than needed; wordy',
-    partOfSpeech: 'adjective',
-    pronunciation: 'ver-BOSE',
-    example: 'His verbose explanation confused rather than clarified the issue.',
-    synonyms: ['wordy', 'long-winded', 'prolix', 'talkative', 'garrulous'],
-    difficulty: 2,
-    etymology: 'From Latin verbosus "full of words"'
-  },
-
-  {
     id: '1',
     value: 'ephemeral',
     definition: 'Lasting for a very short time',
@@ -225,6 +123,327 @@ const literaryWords: Word[] = [
     synonyms: ['empathy', 'understanding', 'connection', 'shared experience'],
     difficulty: 1,
     etymology: 'Coined by John Koenig in "The Dictionary of Obscure Sorrows"'
+  },
+  {
+    id: '12',
+    value: 'tranquil',
+    definition: 'Free from disturbance; calm and peaceful',
+    partOfSpeech: 'adjective',
+    pronunciation: 'TRANG-kwil',
+    example: 'The tranquil lake reflected the mountains like a mirror.',
+    synonyms: ['peaceful', 'calm', 'serene', 'quiet', 'still'],
+    difficulty: 1,
+    etymology: 'From Latin tranquillus "quiet, calm"'
+  },
+  {
+    id: '13',
+    value: 'eloquent',
+    definition: 'Fluent or persuasive in speaking or writing',
+    partOfSpeech: 'adjective',
+    pronunciation: 'EL-uh-kwent',
+    example: 'Her eloquent speech moved the entire audience.',
+    synonyms: ['articulate', 'expressive', 'fluent', 'well-spoken', 'persuasive'],
+    difficulty: 1,
+    etymology: 'From Latin eloquentem, from eloqui "to speak out"'
+  },
+  {
+    id: '14',
+    value: 'diligent',
+    definition: 'Having or showing care and conscientiousness in one\'s work or duties',
+    partOfSpeech: 'adjective',
+    pronunciation: 'DIL-i-jent',
+    example: 'The diligent student always completed her assignments on time.',
+    synonyms: ['hardworking', 'industrious', 'careful', 'thorough', 'attentive'],
+    difficulty: 1,
+    etymology: 'From Latin diligentem "attentive, careful"'
+  },
+  {
+    id: '15',
+    value: 'benevolent',
+    definition: 'Well-meaning and kindly',
+    partOfSpeech: 'adjective',
+    pronunciation: 'buh-NEV-uh-lent',
+    example: 'The benevolent donor gave millions to charity.',
+    synonyms: ['kind', 'generous', 'charitable', 'altruistic', 'compassionate'],
+    difficulty: 1,
+    etymology: 'From Latin benevolens "wishing well, benevolent"'
+  },
+
+  // Difficulty Level 2 Words
+  {
+    id: '16',
+    value: 'ambiguous',
+    definition: 'Open to more than one interpretation; not having one obvious meaning',
+    partOfSpeech: 'adjective',
+    pronunciation: 'am-BIG-yoo-us',
+    example: 'His ambiguous response left us wondering what he really meant.',
+    synonyms: ['unclear', 'vague', 'equivocal', 'cryptic', 'obscure'],
+    difficulty: 2,
+    etymology: 'From Latin ambiguus "having double meaning, shifting"'
+  },
+  {
+    id: '17',
+    value: 'meticulous',
+    definition: 'Showing great attention to detail; very careful and precise',
+    partOfSpeech: 'adjective',
+    pronunciation: 'muh-TIK-yuh-lus',
+    example: 'The watchmaker was meticulous in assembling the tiny components.',
+    synonyms: ['precise', 'thorough', 'careful', 'fastidious', 'scrupulous'],
+    difficulty: 2,
+    etymology: 'From Latin meticulosus "fearful, timid"'
+  },
+  {
+    id: '18',
+    value: 'resilient',
+    definition: 'Able to withstand or recover quickly from difficult conditions',
+    partOfSpeech: 'adjective',
+    pronunciation: 'ri-ZIL-yent',
+    example: 'The resilient community quickly rebuilt after the hurricane.',
+    synonyms: ['tough', 'adaptable', 'hardy', 'flexible', 'buoyant'],
+    difficulty: 2,
+    etymology: 'From Latin resiliens, present participle of resilire "to rebound, recoil"'
+  },
+  {
+    id: '19',
+    value: 'pragmatic',
+    definition: 'Dealing with things sensibly and realistically in a way that is based on practical considerations',
+    partOfSpeech: 'adjective',
+    pronunciation: 'prag-MAT-ik',
+    example: 'We need a pragmatic approach to solving this problem.',
+    synonyms: ['practical', 'realistic', 'sensible', 'rational', 'reasonable'],
+    difficulty: 2,
+    etymology: 'From Greek pragmatikos "relating to fact"'
+  },
+  {
+    id: '20',
+    value: 'verbose',
+    definition: 'Using or containing more words than needed; wordy',
+    partOfSpeech: 'adjective',
+    pronunciation: 'ver-BOSE',
+    example: 'His verbose explanation confused rather than clarified the issue.',
+    synonyms: ['wordy', 'long-winded', 'prolix', 'talkative', 'garrulous'],
+    difficulty: 2,
+    etymology: 'From Latin verbosus "full of words"'
+  },
+  {
+    id: "21",
+    value: "abase",
+    definition: "To lower in rank, status, or dignity; to humiliate or degrade",
+    partOfSpeech: "verb",
+    pronunciation: "uh-BAYSS",
+    example: "He refused to abase himself by apologizing for something he didn't do.",
+    synonyms: ["humiliate", "degrade", "demean", "humble", "belittle"],
+    difficulty: 3,
+    etymology: "From Old French abaissier, from Latin ad- + bassus 'low'"
+  },
+  {
+    id: "22",
+    value: "abate",
+    definition: "To decrease, reduce, or diminish in intensity or degree",
+    partOfSpeech: "verb",
+    pronunciation: "uh-BAYT",
+    example: "The storm finally abated after raging for three days.",
+    synonyms: ["subside", "diminish", "decrease", "lessen", "wane"],
+    difficulty: 2,
+    etymology: "From Old French abatre 'to beat down'"
+  },
+  {
+    id: "23",
+    value: "aberrant",
+    definition: "Deviating from what is normal or expected; abnormal",
+    partOfSpeech: "adjective",
+    pronunciation: "ab-ER-uhnt",
+    example: "The scientist noted the aberrant behavior of the test subjects.",
+    synonyms: ["abnormal", "deviant", "atypical", "anomalous", "irregular"],
+    difficulty: 3,
+    etymology: "From Latin aberrantem 'wandering away'"
+  },
+  {
+    id: "24",
+    value: "abeyance",
+    definition: "A temporary state of suspension or inactivity",
+    partOfSpeech: "noun",
+    pronunciation: "uh-BAY-uhns",
+    example: "The project was held in abeyance until additional funding could be secured.",
+    synonyms: ["suspension", "postponement", "dormancy", "inactivity", "latency"],
+    difficulty: 3,
+    etymology: "From Anglo-French abeiance 'suspension', from Old French baer 'to gape'"
+  },
+  {
+    id: "25",
+    value: "abhor",
+    definition: "To regard with extreme repugnance or hatred; to detest utterly",
+    partOfSpeech: "verb",
+    pronunciation: "ab-HOR",
+    example: "She abhors any form of cruelty to animals.",
+    synonyms: ["detest", "loathe", "hate", "despise", "revile"],
+    difficulty: 2,
+    etymology: "From Latin abhorrere 'to shrink back from in horror'"
+  },
+  {
+    id: "26",
+    value: "abject",
+    definition: "Being of the lowest degree; extremely hopeless or wretched",
+    partOfSpeech: "adjective",
+    pronunciation: "AB-jekt",
+    example: "The refugees lived in abject poverty.",
+    synonyms: ["wretched", "miserable", "degraded", "despicable", "contemptible"],
+    difficulty: 3,
+    etymology: "From Latin abjectus 'thrown down, low'"
+  },
+  {
+    id: "27",
+    value: "abjure",
+    definition: "To renounce or reject solemnly; to recant",
+    partOfSpeech: "verb",
+    pronunciation: "ab-JOOR",
+    example: "The spy was forced to abjure his loyalty to his home country.",
+    synonyms: ["renounce", "recant", "repudiate", "forswear", "reject"],
+    difficulty: 3,
+    etymology: "From Latin abjurare 'to deny on oath'"
+  },
+  {
+    id: "28",
+    value: "abnegate",
+    definition: "To deny oneself something; to reject or renounce",
+    partOfSpeech: "verb",
+    pronunciation: "AB-ni-gayt",
+    example: "The monk abnegated all worldly possessions.",
+    synonyms: ["deny", "renounce", "relinquish", "surrender", "forgo"],
+    difficulty: 3,
+    etymology: "From Latin abnegare 'to refuse, deny'"
+  },
+  {
+    id: "29",
+    value: "abrasive",
+    definition: "Causing irritation; rough in manner or personality",
+    partOfSpeech: "adjective",
+    pronunciation: "uh-BRAY-siv",
+    example: "His abrasive personality made it difficult to work with him.",
+    synonyms: ["irritating", "grating", "harsh", "rough", "caustic"],
+    difficulty: 2,
+    etymology: "From Latin abradere 'to scrape off'"
+  },
+  {
+    id: "30",
+    value: "abrogate",
+    definition: "To abolish by formal means; to cancel or revoke",
+    partOfSpeech: "verb",
+    pronunciation: "AB-ruh-gayt",
+    example: "The government moved to abrogate the treaty.",
+    synonyms: ["repeal", "revoke", "rescind", "nullify", "annul"],
+    difficulty: 3,
+    etymology: "From Latin abrogare 'to annul, repeal'"
+  },
+  {
+    id: "31",
+    value: "abstemious",
+    definition: "Moderate and sparing, especially in eating and drinking",
+    partOfSpeech: "adjective",
+    pronunciation: "ab-STEE-mee-us",
+    example: "His abstemious lifestyle included a strict diet and regular exercise.",
+    synonyms: ["temperate", "moderate", "restrained", "austere", "frugal"],
+    difficulty: 3,
+    etymology: "From Latin abstemius 'abstaining from wine'"
+  },
+  {
+    id: "32",
+    value: "abstruse",
+    definition: "Difficult to comprehend; obscure; profound",
+    partOfSpeech: "adjective",
+    pronunciation: "ab-STROOS",
+    example: "The professor's lecture was filled with abstruse philosophical concepts.",
+    synonyms: ["obscure", "recondite", "arcane", "esoteric", "complex"],
+    difficulty: 3,
+    etymology: "From Latin abstrusus 'hidden, concealed'"
+  },
+  {
+    id: "33",
+    value: "acerbic",
+    definition: "Sharp and forthright in expression; biting",
+    partOfSpeech: "adjective",
+    pronunciation: "uh-SUR-bik",
+    example: "The critic was known for his acerbic reviews of new restaurants.",
+    synonyms: ["harsh", "bitter", "caustic", "tart", "mordant"],
+    difficulty: 3,
+    etymology: "From Latin acerbus 'bitter, harsh, sour'"
+  },
+  {
+    id: "34",
+    value: "acme",
+    definition: "The highest point; the peak or zenith",
+    partOfSpeech: "noun",
+    pronunciation: "AK-mee",
+    example: "The Renaissance represented the acme of artistic achievement in Europe.",
+    synonyms: ["pinnacle", "summit", "apex", "zenith", "peak"],
+    difficulty: 2,
+    etymology: "From Greek akme 'point, highest point'"
+  },
+  {
+    id: "35",
+    value: "acquiesce",
+    definition: "To accept or comply passively; to agree without protest",
+    partOfSpeech: "verb",
+    pronunciation: "ak-wee-ES",
+    example: "Rather than argue further, she acquiesced to their demands.",
+    synonyms: ["comply", "consent", "agree", "accede", "concede"],
+    difficulty: 3,
+    etymology: "From Latin acquiescere 'to rest, be satisfied with'"
+  },
+  {
+    id: "36",
+    value: "acumen",
+    definition: "Keen insight; quickness of perception",
+    partOfSpeech: "noun",
+    pronunciation: "uh-KYOO-men",
+    example: "Her business acumen helped the company navigate difficult economic times.",
+    synonyms: ["shrewdness", "astuteness", "insight", "perception", "discernment"],
+    difficulty: 3,
+    etymology: "From Latin acumen 'sharpness, point'"
+  },
+  {
+    id: "37",
+    value: "adamant",
+    definition: "Unyielding; firmly fixed; stubbornly determined",
+    partOfSpeech: "adjective",
+    pronunciation: "AD-uh-muhnt",
+    example: "Despite all arguments, she remained adamant about her decision.",
+    synonyms: ["unyielding", "inflexible", "resolute", "unshakable", "intransigent"],
+    difficulty: 2,
+    etymology: "From Latin adamans 'hard as steel/diamond'"
+  },
+  {
+    id: "38",
+    value: "admonish",
+    definition: "To warn or criticize gently but earnestly",
+    partOfSpeech: "verb",
+    pronunciation: "ad-MON-ish",
+    example: "The teacher admonished the students about the importance of studying for exams.",
+    synonyms: ["warn", "caution", "reprove", "rebuke", "chide"],
+    difficulty: 2,
+    etymology: "From Latin admonere 'to warn, advise'"
+  },
+  {
+    id: "39",
+    value: "adroit",
+    definition: "Clever or skillful in using the hands or mind",
+    partOfSpeech: "adjective",
+    pronunciation: "uh-DROIT",
+    example: "She was adroit at manipulating the conversation to avoid difficult topics.",
+    synonyms: ["skillful", "dexterous", "deft", "nimble", "proficient"],
+    difficulty: 3,
+    etymology: "From French adroit 'straight to the right'"
+  },
+  {
+    id: "40",
+    value: "adulation",
+    definition: "Excessive praise or flattery",
+    partOfSpeech: "noun",
+    pronunciation: "aj-uh-LAY-shun",
+    example: "The movie star received adulation wherever she went.",
+    synonyms: ["flattery", "praise", "worship", "homage", "admiration"],
+    difficulty: 3,
+    etymology: "From Latin adulationem 'flattery, fawning'"
   }
 ];
 
