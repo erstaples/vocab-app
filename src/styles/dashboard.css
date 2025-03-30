@@ -1,0 +1,433 @@
+/* src/styles/dashboard.css */
+
+/* Dashboard styles */
+.dashboard {
+  padding: var(--spacing-4);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.dashboard-header h1 {
+  margin-bottom: var(--spacing-3);
+  color: var(--primary);
+}
+
+.user-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  width: 100%;
+  max-width: 800px;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-4);
+}
+
+.review-section,
+.learning-section,
+.word-of-the-day,
+.stats-section,
+.recent-section {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-3);
+  overflow: hidden;
+}
+
+.review-section h2,
+.learning-section h2,
+.word-of-the-day h2,
+.stats-section h2,
+.recent-section h2 {
+  font-size: var(--font-size-lg);
+  padding-bottom: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--gray-300);
+  color: var(--gray-800);
+}
+
+/* Review section styles */
+.review-count {
+  text-align: center;
+  margin-bottom: var(--spacing-3);
+}
+
+.review-count .count {
+  display: block;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.review-count .label {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.completed-message {
+  text-align: center;
+  padding: var(--spacing-3);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  color: var(--gray-700);
+}
+
+/* Stats section styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3);
+}
+
+.stat-item {
+  padding: var(--spacing-2);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: var(--spacing-1);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+/* Recent words section styles */
+.recent-words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-words {
+  text-align: center;
+  padding: var(--spacing-3);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  color: var(--gray-700);
+}
+
+/* Word of the day section styles */
+.word-of-the-day {
+  grid-column: span 2;
+}
+
+.no-word {
+  text-align: center;
+  padding: var(--spacing-3);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  color: var(--gray-700);
+}
+
+/* Button styles for dashboard */
+.primary-button,
+.secondary-button {
+  display: block;
+  width: 100%;
+  padding: var(--spacing-2);
+  text-align: center;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.primary-button {
+  background-color: var(--primary);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-dark);
+}
+
+.secondary-button {
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.secondary-button:hover {
+  background-color: rgba(67, 97, 238, 0.05);
+}
+
+/* Profile page styles */
+.profile-page {
+  padding: var(--spacing-4);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  margin-right: var(--spacing-3);
+  font-size: var(--font-size-lg);
+}
+
+.back-button:hover {
+  color: var(--primary-dark);
+}
+
+.profile-header h1 {
+  margin-bottom: 0;
+  color: var(--primary);
+}
+
+.profile-hero {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-3);
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  color: white;
+  font-size: 2rem;
+  font-weight: 600;
+  border-radius: 50%;
+  margin-right: var(--spacing-3);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h2 {
+  margin-bottom: var(--spacing-1);
+  color: var(--gray-800);
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.level-badge,
+.streak-badge {
+  padding: var(--spacing-1) var(--spacing-2);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-pill);
+  font-size: var(--font-size-sm);
+  color: var(--gray-700);
+}
+
+.level-badge {
+  color: white;
+  background-color: var(--primary);
+}
+
+.member-since {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: var(--spacing-1);
+  margin-bottom: var(--spacing-4);
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-1);
+}
+
+.tab-button {
+  flex: 1;
+  padding: var(--spacing-2);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-weight: 500;
+}
+
+.tab-button:hover {
+  background-color: var(--gray-100);
+}
+
+.tab-button.active {
+  background-color: var(--primary);
+  color: white;
+}
+
+.profile-content {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: var(--spacing-4);
+}
+
+.stats-tab,
+.badges-tab,
+.history-tab {
+  width: 100%;
+}
+
+.level-section,
+.stats-grid-section,
+.achievement-section {
+  margin-bottom: var(--spacing-4);
+}
+
+.level-section h3,
+.stats-grid-section h3,
+.achievement-section h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-3);
+  color: var(--gray-800);
+}
+
+.xp-info {
+  text-align: right;
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-3);
+}
+
+.stat-card {
+  padding: var(--spacing-3);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.achievement-summary {
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+}
+
+.achievement-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2);
+}
+
+.achievement-item:last-child {
+  margin-bottom: 0;
+}
+
+.achievement-label {
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.achievement-value {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.badges-intro {
+  margin-bottom: var(--spacing-3);
+  color: var(--gray-700);
+}
+
+.history-chart {
+  margin-bottom: var(--spacing-4);
+}
+
+.placeholder-chart {
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-3);
+  text-align: center;
+  color: var(--gray-600);
+}
+
+.fake-heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+  gap: 4px;
+  margin-top: var(--spacing-3);
+}
+
+.heatmap-day {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.activity-list {
+  margin-bottom: var(--spacing-4);
+}
+
+.activity-item {
+  display: flex;
+  padding: var(--spacing-2);
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.activity-date {
+  width: 100px;
+  flex-shrink: 0;
+  color: var(--gray-600);
+  font-size: var(--font-size-sm);
+}
+
+.activity-details {
+  flex: 1;
+}
+
+.activity-title {
+  font-weight: 500;
+  color: var(--gray-800);
+  margin-bottom: 2px;
+}
+
+.activity-meta {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
