@@ -159,10 +159,11 @@ export class UserProgressService {
   public getNewWords(count: number = 5): any[] {
     const user = this.getCurrentUser();
     const knownWordIds = user.progress.words.map((word: UserWordProgress) => word.wordId);
-
+    console.log('Level: ', user.progress.level);
     // Get difficulty based on user level (higher level = higher difficulty allowed)
     const maxDifficulty = Math.min(5, Math.ceil(user.progress.level / 4)) as 1 | 2 | 3 | 4 | 5;
 
+    console.log('Max Difficulty: ', maxDifficulty);
     return wordService.getNewWords(count, knownWordIds, maxDifficulty);
   }
 

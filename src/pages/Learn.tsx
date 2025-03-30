@@ -31,11 +31,14 @@ const Learn: React.FC = () => {
 
     // Fetch new words
     const words = userProgressService.getNewWords(wordsPerDay);
+    console.log('Learn: Fetched new words:', words);
     setNewWords(words);
 
     if (words.length > 0) {
+      console.log('Learn: Setting current word:', words[0]);
       setCurrentWord(words[0]);
     } else {
+      console.log('Learn: No words available, showing completion screen');
       setLearningComplete(true);
     }
   }, [user]);
@@ -88,6 +91,39 @@ const Learn: React.FC = () => {
   const renderCompletionScreen = () => {
     const sessionDuration = Math.round((Date.now() - sessionStats.startTime) / 1000 / 60);
 
+    // If no words were learned, show a different message
+    if (sessionStats.wordsLearned === 0) {
+      return (
+        <div className="learning-complete">
+          <h2>No New Words Available</h2>
+
+          <div className="no-words-message">
+            <p>
+              There are no new words available at your current level. This could be because:
+            </p>
+            <ul>
+              <li>You've already learned all available words at your current difficulty level</li>
+              <li>You need to level up to access more difficult words</li>
+            </ul>
+            <p>
+              You can continue reviewing words you've already learned, or reset your progress
+              in the Settings page to start fresh.
+            </p>
+          </div>
+
+          <div className="completion-actions">
+            <button className="primary-button" onClick={handleReturnToDashboard}>
+              Return to Dashboard
+            </button>
+            <button className="secondary-button" onClick={() => navigate('/settings')}>
+              Go to Settings
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Normal completion screen when words were learned
     return (
       <div className="learning-complete">
         <h2>Learning Session Complete!</h2>

@@ -1,18 +1,16 @@
 // src/App.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { User, Word, UserWordProgress, LearningMode } from './models';
 import { UserProgressService } from './services/user-progress-service';
-
-// Create an instance of the service
-const userProgressService = new UserProgressService();
-
-// Import pages
 import Dashboard from './pages/Dashboard';
 import Learn from './pages/Learn';
 import Review from './pages/Review';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+
+// Create an instance of the service
+const userProgressService = new UserProgressService();
 
 // AppContext for global state
 export const AppContext = React.createContext<{
@@ -99,11 +97,11 @@ const App: React.FC = () => {
   };
 
   // Refresh the words list
-  const refreshWords = () => {
+  const refreshWords = useCallback(() => {
     const dueWords = userProgressService.getDueWords();
     setWords(dueWords);
     setDueCount(dueWords.length);
-  };
+  }, []);
 
   // App context value
   const contextValue = {

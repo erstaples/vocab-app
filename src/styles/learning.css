@@ -12,8 +12,6 @@
   position: relative;
   width: 100%;
   min-height: 300px;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
   background-color: white;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
@@ -22,11 +20,9 @@
 
 .flashcard-front,
 .flashcard-back {
-  position: absolute;
   width: 100%;
-  height: 100%;
+  min-height: 300px;
   padding: var(--spacing-4);
-  backface-visibility: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -37,12 +33,7 @@
 }
 
 .flashcard-back {
-  transform: rotateY(180deg);
   overflow-y: auto;
-}
-
-.flashcard.flipped {
-  transform: rotateY(180deg);
 }
 
 .flashcard h2 {
@@ -503,6 +494,31 @@
   border-radius: var(--border-radius);
   border-left: 4px solid var(--success);
   text-align: left;
+}
+
+.no-words-message {
+  margin: var(--spacing-4) 0;
+  padding: var(--spacing-3);
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary);
+  text-align: left;
+}
+
+.no-words-message ul {
+  margin: var(--spacing-2) 0;
+  padding-left: var(--spacing-4);
+}
+
+.no-words-message li {
+  margin-bottom: var(--spacing-1);
+}
+
+.completion-actions {
+  display: flex;
+  gap: var(--spacing-3);
+  justify-content: center;
+  margin-top: var(--spacing-4);
 }
 
 /* Word Card styles */

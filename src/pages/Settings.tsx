@@ -3,6 +3,10 @@ import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { LearningMode } from '../models';
+import { UserProgressService } from '../services/user-progress-service';
+
+// Create an instance of the service
+const userProgressService = new UserProgressService();
 
 const Settings: React.FC = () => {
   const { user, updatePreferences } = useContext(AppContext);
@@ -165,7 +169,20 @@ const Settings: React.FC = () => {
 
           <div className="danger-zone">
             <h3>Danger Zone</h3>
-            <button className="danger-button">Reset Progress</button>
+            <button
+              className="danger-button"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                  userProgressService.resetProgress();
+                  setShowConfirmation(true);
+                  setTimeout(() => {
+                    setShowConfirmation(false);
+                  }, 3000);
+                }
+              }}
+            >
+              Reset Progress
+            </button>
             <p className="warning-text">
               This will delete all your progress and reset your account.
               This action cannot be undone.

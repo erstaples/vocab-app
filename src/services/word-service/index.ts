@@ -4,6 +4,108 @@ import { Word } from '../../models';
 // For this example, we'll use a static dataset
 const literaryWords: Word[] = [
   {
+    id: '12',
+    value: 'tranquil',
+    definition: 'Free from disturbance; calm and peaceful',
+    partOfSpeech: 'adjective',
+    pronunciation: 'TRANG-kwil',
+    example: 'The tranquil lake reflected the mountains like a mirror.',
+    synonyms: ['peaceful', 'calm', 'serene', 'quiet', 'still'],
+    difficulty: 1,
+    etymology: 'From Latin tranquillus "quiet, calm"'
+  },
+  {
+    id: '13',
+    value: 'eloquent',
+    definition: 'Fluent or persuasive in speaking or writing',
+    partOfSpeech: 'adjective',
+    pronunciation: 'EL-uh-kwent',
+    example: 'Her eloquent speech moved the entire audience.',
+    synonyms: ['articulate', 'expressive', 'fluent', 'well-spoken', 'persuasive'],
+    difficulty: 1,
+    etymology: 'From Latin eloquentem, from eloqui "to speak out"'
+  },
+  {
+    id: '14',
+    value: 'diligent',
+    definition: 'Having or showing care and conscientiousness in one\'s work or duties',
+    partOfSpeech: 'adjective',
+    pronunciation: 'DIL-i-jent',
+    example: 'The diligent student always completed her assignments on time.',
+    synonyms: ['hardworking', 'industrious', 'careful', 'thorough', 'attentive'],
+    difficulty: 1,
+    etymology: 'From Latin diligentem "attentive, careful"'
+  },
+  {
+    id: '15',
+    value: 'benevolent',
+    definition: 'Well-meaning and kindly',
+    partOfSpeech: 'adjective',
+    pronunciation: 'buh-NEV-uh-lent',
+    example: 'The benevolent donor gave millions to charity.',
+    synonyms: ['kind', 'generous', 'charitable', 'altruistic', 'compassionate'],
+    difficulty: 1,
+    etymology: 'From Latin benevolens "wishing well, benevolent"'
+  },
+
+  // Difficulty Level 2 Words
+  {
+    id: '16',
+    value: 'ambiguous',
+    definition: 'Open to more than one interpretation; not having one obvious meaning',
+    partOfSpeech: 'adjective',
+    pronunciation: 'am-BIG-yoo-us',
+    example: 'His ambiguous response left us wondering what he really meant.',
+    synonyms: ['unclear', 'vague', 'equivocal', 'cryptic', 'obscure'],
+    difficulty: 2,
+    etymology: 'From Latin ambiguus "having double meaning, shifting"'
+  },
+  {
+    id: '17',
+    value: 'meticulous',
+    definition: 'Showing great attention to detail; very careful and precise',
+    partOfSpeech: 'adjective',
+    pronunciation: 'muh-TIK-yuh-lus',
+    example: 'The watchmaker was meticulous in assembling the tiny components.',
+    synonyms: ['precise', 'thorough', 'careful', 'fastidious', 'scrupulous'],
+    difficulty: 2,
+    etymology: 'From Latin meticulosus "fearful, timid"'
+  },
+  {
+    id: '18',
+    value: 'resilient',
+    definition: 'Able to withstand or recover quickly from difficult conditions',
+    partOfSpeech: 'adjective',
+    pronunciation: 'ri-ZIL-yent',
+    example: 'The resilient community quickly rebuilt after the hurricane.',
+    synonyms: ['tough', 'adaptable', 'hardy', 'flexible', 'buoyant'],
+    difficulty: 2,
+    etymology: 'From Latin resiliens, present participle of resilire "to rebound, recoil"'
+  },
+  {
+    id: '19',
+    value: 'pragmatic',
+    definition: 'Dealing with things sensibly and realistically in a way that is based on practical considerations',
+    partOfSpeech: 'adjective',
+    pronunciation: 'prag-MAT-ik',
+    example: 'We need a pragmatic approach to solving this problem.',
+    synonyms: ['practical', 'realistic', 'sensible', 'rational', 'reasonable'],
+    difficulty: 2,
+    etymology: 'From Greek pragmatikos "relating to fact"'
+  },
+  {
+    id: '20',
+    value: 'verbose',
+    definition: 'Using or containing more words than needed; wordy',
+    partOfSpeech: 'adjective',
+    pronunciation: 'ver-BOSE',
+    example: 'His verbose explanation confused rather than clarified the issue.',
+    synonyms: ['wordy', 'long-winded', 'prolix', 'talkative', 'garrulous'],
+    difficulty: 2,
+    etymology: 'From Latin verbosus "full of words"'
+  },
+
+  {
     id: '1',
     value: 'ephemeral',
     definition: 'Lasting for a very short time',
@@ -112,6 +214,17 @@ const literaryWords: Word[] = [
     synonyms: ['inexpressible', 'indescribable', 'unspeakable', 'beyond words', 'unutterable'],
     difficulty: 5,
     etymology: 'From Latin ineffabilis, from in- "not" + effabilis "speakable"'
+  },
+  {
+    id: '11',
+    value: 'sonder',
+    definition: 'The realization that each random passerby is living a life as vivid and complex as your own',
+    partOfSpeech: 'noun',
+    pronunciation: 'SON-der',
+    example: 'In the crowded city, I often feel a sense of sonder as I watch strangers go about their lives.',
+    synonyms: ['empathy', 'understanding', 'connection', 'shared experience'],
+    difficulty: 1,
+    etymology: 'Coined by John Koenig in "The Dictionary of Obscure Sorrows"'
   }
 ];
 
@@ -159,6 +272,8 @@ export class WordService {
     excludeIds: string[] = [],
     maxDifficulty: 1 | 2 | 3 | 4 | 5 = 5
   ): Word[] {
+    console.log(`Excluding IDs: ${excludeIds.join(', ')}`);
+    console.log(`Max Difficulty: ${maxDifficulty}`);
     return this.words
       .filter(word => !excludeIds.includes(word.id) && word.difficulty <= maxDifficulty)
       .sort(() => Math.random() - 0.5) // Randomize order

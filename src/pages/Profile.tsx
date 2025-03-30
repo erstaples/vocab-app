@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { Badge, UserStats } from '../models';
 import { UserProgressService } from '../services/user-progress-service';
+import LevelProgress from '../components/gamification/LevelProgress';
+import BadgeCollection from '../components/gamification/BadgeCollection';
 
 // Create an instance of the service
 const userProgressService = new UserProgressService();
-
-// Import components (these would be created separately)
-import LevelProgress from '../components/gamification/LevelProgress';
-import BadgeCollection from '../components/gamification/BadgeCollection';
 
 const Profile: React.FC = () => {
   const { user } = useContext(AppContext);

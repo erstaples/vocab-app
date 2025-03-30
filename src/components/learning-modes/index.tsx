@@ -27,23 +27,24 @@ export const FlashcardMode: React.FC<LearningModeProps> = ({ word, onComplete })
     onComplete(score, timeSpent);
   };
 
+  // Instead of using CSS flipping, we'll conditionally render the front or back
   return (
     <div className="flashcard-container">
-      <div className={`flashcard ${showAnswer ? 'flipped' : ''}`}>
-        <div className="flashcard-front">
-          <h2>{word.value}</h2>
-          <p className="part-of-speech">{word.partOfSpeech}</p>
-          <p className="pronunciation">{word.pronunciation}</p>
+      <div className="flashcard">
+        {!showAnswer ? (
+          // Front of card
+          <div className="flashcard-front">
+            <h2>{word.value}</h2>
+            <p className="part-of-speech">{word.partOfSpeech}</p>
+            <p className="pronunciation">{word.pronunciation}</p>
 
-          {!showAnswer && (
             <button onClick={handleReveal} className="reveal-button">
               Reveal Answer
             </button>
-          )}
-        </div>
-
-        {showAnswer && (
-          <div className="flashcard-back">
+          </div>
+        ) : (
+          // Back of card (answer)
+          <div className="flashcard-back" style={{ transform: 'none' }}>
             <h3>Definition:</h3>
             <p>{word.definition}</p>
 

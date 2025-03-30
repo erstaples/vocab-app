@@ -5,14 +5,12 @@ import { AppContext } from '../App';
 import { UserStats, Word } from '../models';
 import { UserProgressService } from '../services/user-progress-service';
 import wordService from '../services/word-service';
-
-// Create an instance of the service
-const userProgressService = new UserProgressService();
-
-// Import components (these would be created separately)
 import LevelProgress from '../components/gamification/LevelProgress';
 import Streak from '../components/gamification/Streak';
 import WordCard from '../components/common/WordCard';
+
+// Create an instance of the service
+const userProgressService = new UserProgressService();
 
 const Dashboard: React.FC = () => {
   const { user, dueCount, refreshWords } = useContext(AppContext);
@@ -21,6 +19,7 @@ const Dashboard: React.FC = () => {
   const [recentWords, setRecentWords] = useState<{ progress: any; word: Word }[]>([]);
   const [wordOfTheDay, setWordOfTheDay] = useState<Word | null>(null);
 
+  // Effect for loading user stats and recent words
   useEffect(() => {
     // Load user stats
     const userStats = userProgressService.getUserStats();
@@ -30,15 +29,18 @@ const Dashboard: React.FC = () => {
     const recent = userProgressService.getRecentlyReviewedWords(5);
     setRecentWords(recent);
 
+    // Refresh due words count
+    refreshWords();
+  }, [refreshWords]);
+
+  // Separate effect for word of the day that only runs once
+  useEffect(() => {
     // Set word of the day
     const newWords = wordService.getNewWords(1);
     if (newWords.length > 0) {
       setWordOfTheDay(newWords[0]);
     }
-
-    // Refresh due words count
-    refreshWords();
-  }, [refreshWords]);
+  }, []);
 
   // Handle starting a review session
   const handleStartReview = () => {
