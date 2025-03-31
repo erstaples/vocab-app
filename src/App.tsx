@@ -49,11 +49,11 @@ const App: React.FC = () => {
     const loadUserData = async () => {
       try {
         // Load user data
-        const currentUser = userProgressService.getCurrentUser();
+        const currentUser = await userProgressService.getCurrentUser();
         setUser(currentUser);
 
         // Load due words
-        const dueWords = userProgressService.getDueWords();
+        const dueWords = await userProgressService.getDueWords();
         setWords(dueWords);
         setDueCount(dueWords.length);
 
@@ -68,25 +68,25 @@ const App: React.FC = () => {
   }, []);
 
   // Update user
-  const updateUser = (userData: Partial<User>) => {
-    const updatedUser = userProgressService.updateUser(userData);
+  const updateUser = async (userData: Partial<User>) => {
+    const updatedUser = await userProgressService.updateUser(userData);
     setUser(updatedUser);
   };
 
   // Update user preferences
-  const updatePreferences = (preferences: Partial<User['preferences']>) => {
-    const updatedUser = userProgressService.updatePreferences(preferences);
+  const updatePreferences = async (preferences: Partial<User['preferences']>) => {
+    const updatedUser = await userProgressService.updatePreferences(preferences);
     setUser(updatedUser);
   };
 
   // Record a word review
-  const recordReview = (
+  const recordReview = async (
     wordId: string,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode
   ) => {
-    const updatedUser = userProgressService.recordReview(
+    const updatedUser = await userProgressService.recordReview(
       wordId,
       score,
       timeSpent,
@@ -97,8 +97,8 @@ const App: React.FC = () => {
   };
 
   // Refresh the words list
-  const refreshWords = useCallback(() => {
-    const dueWords = userProgressService.getDueWords();
+  const refreshWords = useCallback(async () => {
+    const dueWords = await userProgressService.getDueWords();
     setWords(dueWords);
     setDueCount(dueWords.length);
   }, []);

@@ -21,16 +21,20 @@ const Dashboard: React.FC = () => {
 
   // Effect for loading user stats and recent words
   useEffect(() => {
-    // Load user stats
-    const userStats = userProgressService.getUserStats();
-    setStats(userStats);
+    const loadData = async () => {
+      // Load user stats
+      const userStats = await userProgressService.getUserStats();
+      setStats(userStats);
 
-    // Load recent words
-    const recent = userProgressService.getRecentlyReviewedWords(5);
-    setRecentWords(recent);
+      // Load recent words
+      const recent = await userProgressService.getRecentlyReviewedWords(5);
+      setRecentWords(recent);
 
-    // Refresh due words count
-    refreshWords();
+      // Refresh due words count
+      refreshWords();
+    };
+    
+    loadData();
   }, [refreshWords]);
 
   // Separate effect for word of the day that only runs once

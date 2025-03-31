@@ -20,13 +20,17 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      // Load user stats
-      const userStats = userProgressService.getUserStats();
-      setStats(userStats);
+      const loadData = async () => {
+        // Load user stats
+        const userStats = await userProgressService.getUserStats();
+        setStats(userStats);
 
-      // Load badges
-      const availableBadges = userProgressService.getBadges();
-      setBadges(availableBadges);
+        // Load badges
+        const availableBadges = await userProgressService.getBadges();
+        setBadges(availableBadges);
+      };
+      
+      loadData();
     }
   }, [user]);
 

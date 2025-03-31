@@ -30,17 +30,21 @@ const Learn: React.FC = () => {
     const wordsPerDay = user?.preferences.newWordsPerDay || 5;
 
     // Fetch new words
-    const words = userProgressService.getNewWords(wordsPerDay);
-    console.log('Learn: Fetched new words:', words);
-    setNewWords(words);
+    const fetchWords = async () => {
+      const words = await userProgressService.getNewWords(wordsPerDay);
+      console.log('Learn: Fetched new words:', words);
+      setNewWords(words);
 
-    if (words.length > 0) {
-      console.log('Learn: Setting current word:', words[0]);
-      setCurrentWord(words[0]);
-    } else {
-      console.log('Learn: No words available, showing completion screen');
-      setLearningComplete(true);
-    }
+      if (words.length > 0) {
+        console.log('Learn: Setting current word:', words[0]);
+        setCurrentWord(words[0]);
+      } else {
+        console.log('Learn: No words available, showing completion screen');
+        setLearningComplete(true);
+      }
+    };
+
+    fetchWords();
   }, [user]);
 
   // Update current word when index changes

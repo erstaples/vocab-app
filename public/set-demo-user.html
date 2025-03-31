@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Set Demo User ID</title>
+</head>
+<body>
+  <h1>Setting Demo User ID in localStorage</h1>
+  <div id="result"></div>
+  
+  <script>
+    try {
+      localStorage.setItem("demo_user_id", "6d352c36-ad17-40bc-885e-d49c993ea4ca");
+      document.getElementById("result").innerHTML = 
+        "Success! The demo user ID has been set in localStorage: <strong>6d352c36-ad17-40bc-885e-d49c993ea4ca</strong>.<br><br>" +
+        "You can now close this page and return to the vocabulary app.";
+    } catch (error) {
+      document.getElementById("result").innerHTML = 
+        "Error setting localStorage: " + error.message;
+    }
+  </script>
+</body>
+</html>
