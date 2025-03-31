@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../App';
 import { Word, UserWordProgress, LearningMode } from '../models';
 import { getLearningModeComponent } from '../components/learning-modes';
+import { UserProgressService } from '../services/user-progress-service';
 
 const Review: React.FC = () => {
-  const { words, dueCount, recordReview, user } = useContext(AppContext);
+  const { words, dueCount, recordReview, user, updateUser } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -20,22 +21,41 @@ const Review: React.FC = () => {
     startTime: Date.now(),
   });
 
+  // Import the UserProgressService
+  const userProgressService = new UserProgressService();
+
   // Initialize review session
   useEffect(() => {
-    if (words.length > 0 && currentIndex < words.length) {
-      setCurrentWord(words[currentIndex]);
+    const initReview = async () => {
+      try {
+        // If the user is not loaded or has been lost after navigation, reload it
+        if (!user) {
+          const currentUser = await userProgressService.getCurrentUser();
+          console.log("Review: Reloaded user:", currentUser);
+          updateUser(currentUser); // Update the AppContext with the reloaded user
+          return; // Wait for next effect cycle with the updated user
+        }
 
-      // Select a learning mode based on user preferences
-      if (user && user.preferences.learningModes.length > 0) {
-        const randomMode = user.preferences.learningModes[
-          Math.floor(Math.random() * user.preferences.learningModes.length)
-        ];
-        setSelectedMode(randomMode);
+        if (words.length > 0 && currentIndex < words.length) {
+          setCurrentWord(words[currentIndex]);
+
+          // Select a learning mode based on user preferences
+          if (user && user.preferences?.learningModes?.length > 0) {
+            const randomMode = user.preferences?.learningModes[
+              Math.floor(Math.random() * user.preferences?.learningModes.length)
+            ];
+            setSelectedMode(randomMode);
+          }
+        } else if (words.length === 0) {
+          setReviewComplete(true);
+        }
+      } catch (error) {
+        console.error('Error initializing review:', error);
       }
-    } else if (words.length === 0) {
-      setReviewComplete(true);
-    }
-  }, [words, currentIndex, user]);
+    };
+
+    initReview();
+  }, [words, currentIndex, user, updateUser]);
 
   // Handle completion of a word review
   const handleReviewComplete = (score: 0 | 1 | 2 | 3 | 4 | 5, timeSpent: number) => {

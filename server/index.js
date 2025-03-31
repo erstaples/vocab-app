@@ -108,7 +108,7 @@ async function initializeApp() {
     
     // Start server
     app.listen(port, () => {
-      console.log(`API server running on port ${port}`);
+      console.log(`>> API server running on port ${port}`);
     });
   } catch (error) {
     console.error('Error initializing application:', error);

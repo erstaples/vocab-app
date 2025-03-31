@@ -1,5 +1,6 @@
 const express = require('express');
 const gamificationService = require('../services/gamification-service');
+const db = require('../services/database');
 
 const router = express.Router();
 
@@ -44,16 +45,56 @@ router.post('/:userId/reset-progress', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // This would be a transaction to:
-    // 1. Delete user_badges for the user
-    // 2. Delete word_progress (and cascaded review_history) for the user
-    // 3. Reset user_progress (streak, level, experience)
+    console.log(`Processing reset-progress request for user ${userId}`);
     
-    // Since this is a sensitive operation, implement with caution in a real app
+    // This is a sensitive operation that resets all user progress
+    // We use a transaction to ensure all operations succeed or fail together
+    await db.transaction(async (client) => {
+      // First, verify that the user exists and has progress records
+      const userCheck = await client.query(
+        'SELECT * FROM user_progress WHERE user_id = $1',
+        [userId]
+      );
+      
+      if (userCheck.rows.length === 0) {
+        throw new Error(`User progress not found for user ${userId}`);
+      }
+      
+      // 1. Delete user_badges for the user
+      const badgeResult = await client.query(
+        'DELETE FROM user_badges WHERE user_id = $1 RETURNING badge_id',
+        [userId]
+      );
+      console.log(`Deleted ${badgeResult.rowCount} badges for user ${userId}`);
+      
+      // 2. Delete word_progress (which will cascade to delete review_history)
+      const wordProgressResult = await client.query(
+        'DELETE FROM word_progress WHERE user_id = $1 RETURNING id',
+        [userId]
+      );
+      console.log(`Deleted ${wordProgressResult.rowCount} word progress records for user ${userId}`);
+      
+      // 3. Reset user_progress (streak, level, experience)
+      const progressResult = await client.query(
+        `UPDATE user_progress
+         SET streak = 0,
+             level = 1,
+             experience = 0,
+             last_activity = NOW()
+         WHERE user_id = $1`,
+        [userId]
+      );
+      
+      if (progressResult.rowCount === 0) {
+        throw new Error(`Failed to update user progress for user ${userId}`);
+      }
+      
+      console.log(`Reset progress for user ${userId}`);
+    });
     
-    res.status(501).json({ 
-      error: 'Reset progress functionality is not implemented in this version',
-      message: 'For safety, this endpoint is stubbed. In a real implementation, it would reset the user progress.'
+    res.status(200).json({
+      success: true,
+      message: 'User progress has been reset successfully'
     });
   } catch (error) {
     console.error(`Error resetting progress for user ${req.params.userId}:`, error);

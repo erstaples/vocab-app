@@ -13,7 +13,7 @@ import WordCard from '../components/common/WordCard';
 const userProgressService = new UserProgressService();
 
 const Dashboard: React.FC = () => {
-  const { user, dueCount, refreshWords } = useContext(AppContext);
+  const { user, dueCount, refreshWords, updateUser } = useContext(AppContext);
   const navigate = useNavigate();
   const [stats, setStats] = useState<UserStats | null>(null);
   const [recentWords, setRecentWords] = useState<{ progress: any; word: Word }[]>([]);
@@ -22,20 +22,32 @@ const Dashboard: React.FC = () => {
   // Effect for loading user stats and recent words
   useEffect(() => {
     const loadData = async () => {
-      // Load user stats
-      const userStats = await userProgressService.getUserStats();
-      setStats(userStats);
+      try {
+        // If the user is not loaded or has been lost after navigation, reload it
+        if (!user || !user.id) {
+          console.log("User not found, reloading...");
+          const currentUser = await userProgressService.getCurrentUser();
+          console.log("Reloaded user:", currentUser);
+          updateUser(currentUser); // Update the AppContext with the reloaded user
+        }
+        
+        // Load user stats
+        const userStats = await userProgressService.getUserStats();
+        setStats(userStats);
 
-      // Load recent words
-      const recent = await userProgressService.getRecentlyReviewedWords(5);
-      setRecentWords(recent);
+        // Load recent words
+        const recent = await userProgressService.getRecentlyReviewedWords(5);
+        setRecentWords(recent);
 
-      // Refresh due words count
-      refreshWords();
+        // Refresh due words count
+        refreshWords();
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
     };
     
     loadData();
-  }, [refreshWords]);
+  }, [refreshWords, user]);
 
   // Separate effect for word of the day that only runs once
   useEffect(() => {
@@ -63,7 +75,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>Welcome, {user.username}!</h1>
+        <h1>Welcome, {user?.username || ""}!</h1>
         <div className="user-progress">
           <LevelProgress level={stats.level} currentXP={stats.totalExperience} nextLevelXP={stats.experienceToNextLevel} />
           <Streak count={stats.currentStreak} />
@@ -88,7 +100,7 @@ const Dashboard: React.FC = () => {
 
         <section className="learning-section">
           <h2>Learn New Words</h2>
-          <p>You've set a goal of {user.preferences.newWordsPerDay} new words per day.</p>
+          <p>You've set a goal of {user.preferences?.newWordsPerDay} new words per day.</p>
           <button className="secondary-button" onClick={handleStartLearning}>
             Learn New Words
           </button>

@@ -32,7 +32,7 @@ export const AppContext = React.createContext<{
   words: [],
   dueCount: 0,
   isLoading: true,
-  updateUser: () => { },
+  updateUser: () => { console.log("WHAT IS HAPPENING"); },
   updatePreferences: () => { },
   recordReview: () => { },
   refreshWords: () => { }

@@ -10,7 +10,7 @@ import { getLearningModeComponent } from '../components/learning-modes';
 const userProgressService = new UserProgressService();
 
 const Learn: React.FC = () => {
-  const { user, recordReview } = useContext(AppContext);
+  const { user, recordReview, updateUser } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [newWords, setNewWords] = useState<Word[]>([]);
@@ -26,26 +26,38 @@ const Learn: React.FC = () => {
 
   // Initialize learning session
   useEffect(() => {
-    // Get the number of new words per day from user preferences
-    const wordsPerDay = user?.preferences.newWordsPerDay || 5;
+    const fetchData = async () => {
+      try {
+        // If the user is not loaded or has been lost after navigation, reload it
+        if (!user) {
+          const currentUser = await userProgressService.getCurrentUser();
+          console.log("Learn: Reloaded user:", currentUser);
+          updateUser(currentUser); // Update the AppContext with the reloaded user
+        }
 
-    // Fetch new words
-    const fetchWords = async () => {
-      const words = await userProgressService.getNewWords(wordsPerDay);
-      console.log('Learn: Fetched new words:', words);
-      setNewWords(words);
+        // Get the number of new words per day from user preferences
+        // Add a safety check for when preferences might be undefined
+        const wordsPerDay = user?.preferences?.newWordsPerDay || 5;
 
-      if (words.length > 0) {
-        console.log('Learn: Setting current word:', words[0]);
-        setCurrentWord(words[0]);
-      } else {
-        console.log('Learn: No words available, showing completion screen');
-        setLearningComplete(true);
+        // Fetch new words
+        const words = await userProgressService.getNewWords(wordsPerDay);
+        console.log('Learn: Fetched new words:', words);
+        setNewWords(words);
+
+        if (words.length > 0) {
+          console.log('Learn: Setting current word:', words[0]);
+          setCurrentWord(words[0]);
+        } else {
+          console.log('Learn: No words available, showing completion screen');
+          setLearningComplete(true);
+        }
+      } catch (error) {
+        console.error('Error loading learning data:', error);
       }
     };
 
-    fetchWords();
-  }, [user]);
+    fetchData();
+  }, [user, updateUser]);
 
   // Update current word when index changes
   useEffect(() => {
