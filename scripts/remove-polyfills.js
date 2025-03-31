@@ -43,18 +43,18 @@ function updateConfigOverrides() {
   // Read the current file
   const originalContent = fs.readFileSync(CONFIG_OVERRIDES_PATH, 'utf8');
   
-  // Keep only the essential parts of the config-overrides.js file
-  const updatedContent = `
-const { override, addWebpackAlias } = require('customize-cra');
-const path = require('path');
+  // Replace with a minimal config that doesn't need customize-cra
+  const updatedContent = `/**
+ * React App Rewired configuration
+ * This is a minimal config that doesn't modify webpack configuration.
+ * Since we've moved all Node.js functionality to the backend,
+ * we no longer need polyfills or special webpack configurations.
+ */
 
-// Updated config without Node.js polyfills
-module.exports = override(
-  // Add any necessary webpack aliases here
-  addWebpackAlias({
-    // Add your aliases if needed
-  })
-);
+module.exports = function override(config, env) {
+  // No modifications needed anymore
+  return config;
+};
 `;
   
   // Write the updated content

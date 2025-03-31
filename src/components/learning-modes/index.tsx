@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Word, LearningMode, Review } from '../../models';
+import { Word, LearningMode } from '../../models';
 
 // Interfaces
 interface LearningModeProps {
@@ -98,54 +98,9 @@ export const ContextGuessMode: React.FC<LearningModeProps> = ({ word, onComplete
     setHasSubmitted(true);
   };
 
-  const calculateScore = (): 0 | 1 | 2 | 3 | 4 | 5 => {
-    // Simple scoring mechanism - can be made more sophisticated
-    if (userGuess.toLowerCase() === word.value.toLowerCase()) {
-      return 5; // Perfect match
-    } else if (word.synonyms.some(syn => syn.toLowerCase() === userGuess.toLowerCase())) {
-      return 4; // Synonym match
-    } else {
-      // Check for partial matching (simple version)
-      const similarity = levenshteinDistance(userGuess.toLowerCase(), word.value.toLowerCase());
-      const maxLength = Math.max(userGuess.length, word.value.length);
-      const similarityRatio = 1 - (similarity / maxLength);
-
-      if (similarityRatio > 0.8) return 3;
-      if (similarityRatio > 0.6) return 2;
-      if (similarityRatio > 0.4) return 1;
-      return 0;
-    }
-  };
-
   const handleRate = (score: 0 | 1 | 2 | 3 | 4 | 5) => {
     const timeSpent = Date.now() - startTime;
     onComplete(score, timeSpent);
-  };
-
-  // Calculate string similarity using Levenshtein distance
-  const levenshteinDistance = (a: string, b: string): number => {
-    const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
-
-    for (let i = 0; i <= a.length; i++) {
-      matrix[0][i] = i;
-    }
-
-    for (let j = 0; j <= b.length; j++) {
-      matrix[j][0] = j;
-    }
-
-    for (let j = 1; j <= b.length; j++) {
-      for (let i = 1; i <= a.length; i++) {
-        const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1, // deletion
-          matrix[j - 1][i] + 1, // insertion
-          matrix[j - 1][i - 1] + substitutionCost // substitution
-        );
-      }
-    }
-
-    return matrix[b.length][a.length];
   };
 
   return (

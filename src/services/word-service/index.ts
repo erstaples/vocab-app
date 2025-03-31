@@ -88,11 +88,7 @@ export class WordService {
     // If the first parameter is a number, use the legacy implementation
     if (typeof userIdOrCount === 'number') {
       console.warn('Using deprecated getNewWords method - update to use API version');
-      
-      // Legacy implementation
-      const count = userIdOrCount;
-      const excludeIds = Array.isArray(countOrExcludeIds) ? countOrExcludeIds : [];
-      
+            
       // Mock implementation that returns empty array
       // This is temporary during transition and should be removed once all code is updated
       const mockWords: Word[] = [];

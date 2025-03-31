@@ -1,4 +1,4 @@
-import { User, UserWordProgress, LearningMode, UserStats, Badge } from '../../models';
+import { User, UserWordProgress, LearningMode, UserStats } from '../../models';
 import apiService from '../api';
 
 /**

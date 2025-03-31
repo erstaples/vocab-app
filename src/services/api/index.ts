@@ -5,7 +5,7 @@
  * in the browser environment.
  */
 
-import { User, LearningMode } from '../../models';
+import { User } from '../../models';
 
 // API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
