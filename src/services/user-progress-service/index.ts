@@ -120,32 +120,34 @@ export class UserProgressService {
    * @returns Newly created user
    */
   private async createDemoUser(): Promise<User> {
-    // This would typically call the auth service to create a user,
-    // but for the demo we'll just create a user directly in the database
-    // In a real app, this would involve proper authentication flow
+    // Look for existing demo user ID in localStorage
+    const existingDemoUserId = localStorage.getItem('demo_user_id');
+    
+    if (existingDemoUserId) {
+      try {
+        // Try to get the existing demo user
+        return await postgresUserProgressService.getCurrentUser(existingDemoUserId);
+      } catch (error) {
+        console.error('Error getting existing demo user:', error);
+        // Continue to create a new one if the existing ID is invalid
+      }
+    }
+    
+    // Import auth service to create a user
+    const authService = (await import('../auth')).default;
+    
     try {
-      // For a real app, you would use the auth service:
-      // return await authService.signup('demo@example.com', 'password', 'Demo User');
+      // Use auth service to create a demo user
+      const email = `demo_${Date.now()}@example.com`;
+      const username = `Demo_${Math.floor(Math.random() * 10000)}`;
       
-      // Instead, we'll create a basic user record manually
-      // This is for demo purposes only
-      const userId = crypto.randomUUID();
-      await postgresUserProgressService.getCurrentUser(userId)
-        .catch(async () => {
-          // User doesn't exist, so we need to create it
-          await fetch('/api/demo-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: userId,
-              username: 'Demo_' + Math.floor(Math.random() * 10000),
-              email: `demo_${userId}@example.com`,
-              password: 'demo_password'
-            })
-          });
-        });
+      // Create user with auth service
+      const user = await authService.signup(email, 'password123', username);
       
-      return await postgresUserProgressService.getCurrentUser(userId);
+      // Save demo user ID in localStorage for future use
+      localStorage.setItem('demo_user_id', user.id);
+      
+      return user;
     } catch (error) {
       console.error('Error creating demo user:', error);
       // Fallback to local storage user if database fails
