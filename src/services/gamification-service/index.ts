@@ -1,6 +1,7 @@
-import { User, Badge, UserStats, Review, LearningMode } from '../../models';
+import { User, Badge, UserStats, LearningMode } from '../../models';
+import apiService from '../api';
 
-// Experience points needed per level (increases with each level)
+// Experience points chart kept for reference
 const XP_PER_LEVEL = [
   0,      // Level 0 -> 1
   100,    // Level 1 -> 2
@@ -24,7 +25,7 @@ const XP_PER_LEVEL = [
   55000,
 ];
 
-// Badge definitions
+// Badge definitions kept for reference
 const AVAILABLE_BADGES: Omit<Badge, 'dateEarned'>[] = [
   {
     id: 'first_word',
@@ -96,16 +97,49 @@ const AVAILABLE_BADGES: Omit<Badge, 'dateEarned'>[] = [
 
 /**
  * Service to handle gamification features
+ * Now delegates to the backend API
  */
 class GamificationService {
   /**
-   * Update user experience points based on learning activity
+   * Legacy: Update user experience points based on learning activity
    * @param user Current user
    * @param score Score from the review (0-5)
    * @param mode Learning mode used
    * @returns Updated user object
    */
-  public addExperience(user: User, score: number, mode: LearningMode): User {
+  public addExperience(user: User, score: number, mode: LearningMode): User;
+
+  /**
+   * API: Update user experience points via backend API
+   * @param userId User ID
+   * @param score Score from the review (0-5)
+   * @param mode Learning mode used
+   * @returns Promise with updated user
+   */
+  public addExperience(userId: string, score: number, mode: LearningMode): Promise<User>;
+
+  /**
+   * Implementation for both local and API versions
+   */
+  public addExperience(
+    userOrUserId: User | string,
+    score: number,
+    mode: LearningMode
+  ): User | Promise<User> {
+    // If a User object is passed, use the legacy implementation
+    if (typeof userOrUserId !== 'string') {
+      console.warn('Using deprecated addExperience method - update to use API version');
+      return this.addExperienceLocal(userOrUserId, score, mode);
+    }
+    
+    // If a userId is passed, use the API implementation
+    return this.addExperienceApi(userOrUserId, score, mode);
+  }
+
+  /**
+   * Local implementation of adding experience
+   */
+  private addExperienceLocal(user: User, score: number, mode: LearningMode): User {
     // Base XP for attempting a word
     let xpGained = 5;
 
@@ -124,15 +158,423 @@ class GamificationService {
     const newLevel = this.calculateLevel(updatedUser.progress.experience);
     if (newLevel > updatedUser.progress.level) {
       updatedUser.progress.level = newLevel;
-      // In a real app, you might trigger a level-up celebration here
     }
 
     return updatedUser;
   }
 
   /**
+   * API implementation of adding experience
+   */
+  private async addExperienceApi(userId: string, score: number, mode: LearningMode): Promise<User> {
+    try {
+      // The recordReview API endpoint handles adding experience and updating the user
+      // This is a side effect of recording reviews
+      // If needed, we could also add a dedicated experience endpoint
+      
+      // Get the current user
+      const user = await apiService.getUserById(userId);
+      
+      // Call the check-badges endpoint to trigger badge checking
+      await apiService.fetchJSON(`/users/${userId}/check-badges`, {
+        method: 'POST'
+      });
+      
+      // Return the updated user
+      return user;
+    } catch (error) {
+      console.error('Error adding experience via API:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy: Update user streak
+   * @param user User object
+   * @returns Updated user with streak information
+   */
+  public updateStreak(user: User): User;
+
+  /**
+   * API: Update user streak via backend API
+   * @param userId User ID
+   * @returns Promise with updated user
+   */
+  public updateStreak(userId: string): Promise<User>;
+
+  /**
+   * Implementation for both local and API versions
+   */
+  public updateStreak(userOrUserId: User | string): User | Promise<User> {
+    // If a User object is passed, use the legacy implementation
+    if (typeof userOrUserId !== 'string') {
+      console.warn('Using deprecated updateStreak method - update to use API version');
+      return this.updateStreakLocal(userOrUserId);
+    }
+    
+    // If a userId is passed, use the API implementation
+    return this.updateStreakApi(userOrUserId);
+  }
+
+  /**
+   * Local implementation of updating streak
+   */
+  private updateStreakLocal(user: User): User {
+    const updatedUser = { ...user };
+    const now = new Date();
+    const lastActivity = new Date(user.progress.lastActivity);
+
+    // Calculate days between last activity and now
+    const daysBetween = Math.floor(
+      (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysBetween === 0) {
+      // Same day, no streak change
+    } else if (daysBetween === 1) {
+      // Next consecutive day, increase streak
+      updatedUser.progress.streak += 1;
+    } else {
+      // Streak broken
+      updatedUser.progress.streak = 1;
+    }
+
+    // Update last activity
+    updatedUser.progress.lastActivity = now;
+
+    return updatedUser;
+  }
+
+  /**
+   * API implementation of updating streak
+   */
+  private async updateStreakApi(userId: string): Promise<User> {
+    try {
+      // Call the update-streak API endpoint
+      const response = await apiService.fetchJSON<User>(`/users/${userId}/update-streak`, {
+        method: 'POST'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error updating streak via API:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy: Check for new badges
+   * @param user User object
+   * @returns Updated user with any new badges
+   */
+  public checkForBadges(user: User): User;
+
+  /**
+   * API: Check for new badges via backend API
+   * @param userId User ID
+   * @returns Promise with updated user
+   */
+  public checkForBadges(userId: string): Promise<User>;
+
+  /**
+   * Implementation for both local and API versions
+   */
+  public checkForBadges(userOrUserId: User | string): User | Promise<User> {
+    // If a User object is passed, use the legacy implementation
+    if (typeof userOrUserId !== 'string') {
+      console.warn('Using deprecated checkForBadges method - update to use API version');
+      return this.checkForBadgesLocal(userOrUserId);
+    }
+    
+    // If a userId is passed, use the API implementation
+    return this.checkForBadgesApi(userOrUserId);
+  }
+
+  /**
+   * Local implementation of checking for badges
+   */
+  private checkForBadgesLocal(user: User): User {
+    const updatedUser = { ...user };
+    const earnedBadgeIds = user.progress.badges.map(badge => badge.id);
+    const newBadges: Badge[] = [];
+
+    // Helper function to check if user has a badge
+    const hasBadge = (badgeId: string) => earnedBadgeIds.includes(badgeId);
+
+    // Get unique words the user has learned (with score of 3 or higher)
+    const learnedWordIds = new Set<string>();
+    user.progress.words.forEach(word => {
+      if (word.reviewHistory.some(review => review.score >= 3)) {
+        learnedWordIds.add(word.wordId);
+      }
+    });
+    const uniqueWordsLearned = learnedWordIds.size;
+
+    // Get unique learning modes used
+    const usedModes = new Set<string>();
+    user.progress.words.forEach(word => {
+      word.reviewHistory.forEach(review => {
+        usedModes.add(review.learningMode);
+      });
+    });
+
+    // Check for badges
+    this.checkWordCountBadges(uniqueWordsLearned, hasBadge, newBadges);
+    this.checkStreakBadges(user.progress.streak, hasBadge, newBadges);
+    this.checkModeBadges(usedModes.size, hasBadge, newBadges);
+    this.checkTimeBadges(hasBadge, newBadges);
+
+    // Add new badges to the user
+    if (newBadges.length > 0) {
+      updatedUser.progress.badges = [...updatedUser.progress.badges, ...newBadges];
+    }
+
+    return updatedUser;
+  }
+
+  /**
+   * API implementation of checking for badges
+   */
+  private async checkForBadgesApi(userId: string): Promise<User> {
+    try {
+      // Call the check-badges API endpoint
+      const response = await apiService.fetchJSON<User>(`/users/${userId}/check-badges`, {
+        method: 'POST'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error checking badges via API:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy: Calculate user statistics from user object (for backward compatibility)
+   * @param user User object
+   * @returns User statistics
+   */
+  public calculateUserStats(user: User): UserStats {
+    const words = user.progress.words;
+
+    // Get unique words the user has interacted with
+    const uniqueWordIds = new Set(words.map(w => w.wordId));
+
+    // Get words considered "learned" (score of 3 or higher)
+    const learnedWordIds = new Set<string>();
+    words.forEach(word => {
+      if (word.reviewHistory.some(review => review.score >= 3)) {
+        learnedWordIds.add(word.wordId);
+      }
+    });
+
+    // Calculate total reviews using a loop
+    let totalReviews = 0;
+    for (const word of words) {
+      totalReviews += word.reviewHistory.length;
+    }
+
+    // Calculate average score across all reviews
+    const allScores = words.flatMap(word => word.reviewHistory.map(review => review.score));
+
+    // Calculate sum using a loop
+    let scoreSum = 0;
+    for (const score of allScores) {
+      scoreSum += score;
+    }
+
+    const averageScore = allScores.length > 0
+      ? scoreSum / allScores.length
+      : 0;
+
+    // Calculate total time spent (ms -> minutes)
+    let totalTimeMs = 0;
+    for (const word of words) {
+      let wordTimeMs = 0;
+      for (const review of word.reviewHistory) {
+        wordTimeMs += review.timeSpent;
+      }
+      totalTimeMs += wordTimeMs;
+    }
+    const totalTimeMinutes = Math.round(totalTimeMs / (1000 * 60));
+
+    return {
+      wordsLearned: learnedWordIds.size,
+      wordsReviewed: uniqueWordIds.size,
+      currentStreak: user.progress.streak,
+      longestStreak: user.progress.streak, // In a real app, you'd track the longest streak separately
+      averageScore,
+      totalTimeSpent: totalTimeMinutes,
+      level: user.progress.level,
+      experienceToNextLevel: this.getXpToNextLevel(user),
+      totalExperience: user.progress.experience
+    };
+  }
+
+  /**
+   * API: Get user statistics from backend API
+   * @param userId User ID
+   * @returns Promise with user statistics
+   */
+  public async getUserStats(userId: string): Promise<UserStats> {
+    try {
+      return await apiService.getUserStats(userId);
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy: Get available badges with earned status (local computation)
+   * @param user User object
+   * @returns Array of badges with earned status
+   */
+  public getAvailableBadges(user: User): (Omit<Badge, 'dateEarned'> & { earned: boolean, earnedDate?: Date })[];
+
+  /**
+   * API: Get available badges from backend API
+   * @param userId User ID
+   * @returns Promise with array of badges
+   */
+  public getAvailableBadges(userId: string): Promise<any[]>;
+
+  /**
+   * Implementation for both local and API versions
+   */
+  public getAvailableBadges(
+    userOrUserId: User | string
+  ): (Omit<Badge, 'dateEarned'> & { earned: boolean, earnedDate?: Date })[] | Promise<any[]> {
+    // If a User object is passed, use the legacy implementation
+    if (typeof userOrUserId !== 'string') {
+      console.warn('Using deprecated getAvailableBadges method - update to use API version');
+      return this.getAvailableBadgesLocal(userOrUserId);
+    }
+    
+    // If a userId is passed, use the API implementation
+    return this.getAvailableBadgesApi(userOrUserId);
+  }
+
+  /**
+   * Local implementation of getting available badges
+   */
+  private getAvailableBadgesLocal(user: User): (Omit<Badge, 'dateEarned'> & { earned: boolean, earnedDate?: Date })[] {
+    const earnedBadges = user.progress.badges;
+
+    return AVAILABLE_BADGES.map(badge => {
+      const earnedBadge = earnedBadges.find(b => b.id === badge.id);
+      return {
+        ...badge,
+        earned: !!earnedBadge,
+        earnedDate: earnedBadge?.dateEarned
+      };
+    });
+  }
+
+  /**
+   * API implementation of getting available badges
+   */
+  private async getAvailableBadgesApi(userId: string): Promise<any[]> {
+    try {
+      return await apiService.getBadges(userId);
+    } catch (error) {
+      console.error('Error getting badges via API:', error);
+      throw error;
+    }
+  }
+
+  // Helper methods for the local badge checking implementation
+  private checkWordCountBadges(
+    uniqueWordsLearned: number, 
+    hasBadge: (id: string) => boolean, 
+    newBadges: Badge[]
+  ): void {
+    if (uniqueWordsLearned >= 1 && !hasBadge('first_word')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'first_word')!,
+        dateEarned: new Date()
+      });
+    }
+
+    if (uniqueWordsLearned >= 10 && !hasBadge('ten_words')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'ten_words')!,
+        dateEarned: new Date()
+      });
+    }
+
+    if (uniqueWordsLearned >= 50 && !hasBadge('fifty_words')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'fifty_words')!,
+        dateEarned: new Date()
+      });
+    }
+
+    if (uniqueWordsLearned >= 100 && !hasBadge('hundred_words')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'hundred_words')!,
+        dateEarned: new Date()
+      });
+    }
+  }
+
+  private checkStreakBadges(
+    streak: number, 
+    hasBadge: (id: string) => boolean, 
+    newBadges: Badge[]
+  ): void {
+    if (streak >= 7 && !hasBadge('streak_week')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'streak_week')!,
+        dateEarned: new Date()
+      });
+    }
+
+    if (streak >= 30 && !hasBadge('streak_month')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'streak_month')!,
+        dateEarned: new Date()
+      });
+    }
+  }
+
+  private checkModeBadges(
+    usedModesCount: number, 
+    hasBadge: (id: string) => boolean, 
+    newBadges: Badge[]
+  ): void {
+    if (usedModesCount >= Object.keys(LearningMode).length && !hasBadge('all_modes')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'all_modes')!,
+        dateEarned: new Date()
+      });
+    }
+  }
+
+  private checkTimeBadges(
+    hasBadge: (id: string) => boolean, 
+    newBadges: Badge[]
+  ): void {
+    const now = new Date();
+    const hour = now.getHours();
+
+    if (hour >= 0 && hour < 4 && !hasBadge('night_owl')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'night_owl')!,
+        dateEarned: new Date()
+      });
+    }
+
+    if (hour >= 4 && hour < 6 && !hasBadge('early_bird')) {
+      newBadges.push({
+        ...AVAILABLE_BADGES.find(badge => badge.id === 'early_bird')!,
+        dateEarned: new Date()
+      });
+    }
+  }
+
+  /**
    * Get XP multiplier for different learning modes
-   * Encourages using different modes by giving slightly higher XP
    * @param mode Learning mode
    * @returns XP multiplier
    */
@@ -199,226 +641,8 @@ class GamificationService {
 
     return totalXpForCurrentLevel + xpForNextLevel - user.progress.experience;
   }
-
-  /**
-   * Check and update user streak
-   * @param user User object
-   * @returns Updated user object with streak information
-   */
-  public updateStreak(user: User): User {
-    const updatedUser = { ...user };
-    const now = new Date();
-    const lastActivity = new Date(user.progress.lastActivity);
-
-    // Calculate days between last activity and now
-    const daysBetween = Math.floor(
-      (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysBetween === 0) {
-      // Same day, no streak change
-    } else if (daysBetween === 1) {
-      // Next consecutive day, increase streak
-      updatedUser.progress.streak += 1;
-    } else {
-      // Streak broken
-      updatedUser.progress.streak = 1;
-    }
-
-    // Update last activity
-    updatedUser.progress.lastActivity = now;
-
-    return updatedUser;
-  }
-
-  /**
-   * Check for new badges earned and add them to the user
-   * @param user User object
-   * @returns Updated user object with any new badges
-   */
-  public checkForBadges(user: User): User {
-    const updatedUser = { ...user };
-    const earnedBadgeIds = user.progress.badges.map(badge => badge.id);
-    const newBadges: Badge[] = [];
-
-    // Helper function to check if user has a badge
-    const hasBadge = (badgeId: string) => earnedBadgeIds.includes(badgeId);
-
-    // Get unique words the user has learned (with score of 3 or higher)
-    const learnedWordIds = new Set<string>();
-    user.progress.words.forEach(word => {
-      if (word.reviewHistory.some(review => review.score >= 3)) {
-        learnedWordIds.add(word.wordId);
-      }
-    });
-    const uniqueWordsLearned = learnedWordIds.size;
-
-    // Get unique learning modes used
-    const usedModes = new Set<string>();
-    user.progress.words.forEach(word => {
-      word.reviewHistory.forEach(review => {
-        usedModes.add(review.learningMode);
-      });
-    });
-
-    // Check for word count badges
-    if (uniqueWordsLearned >= 1 && !hasBadge('first_word')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'first_word')!,
-        dateEarned: new Date()
-      });
-    }
-
-    if (uniqueWordsLearned >= 10 && !hasBadge('ten_words')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'ten_words')!,
-        dateEarned: new Date()
-      });
-    }
-
-    if (uniqueWordsLearned >= 50 && !hasBadge('fifty_words')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'fifty_words')!,
-        dateEarned: new Date()
-      });
-    }
-
-    if (uniqueWordsLearned >= 100 && !hasBadge('hundred_words')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'hundred_words')!,
-        dateEarned: new Date()
-      });
-    }
-
-    // Check for streak badges
-    if (user.progress.streak >= 7 && !hasBadge('streak_week')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'streak_week')!,
-        dateEarned: new Date()
-      });
-    }
-
-    if (user.progress.streak >= 30 && !hasBadge('streak_month')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'streak_month')!,
-        dateEarned: new Date()
-      });
-    }
-
-    // Check for learning modes badge
-    if (usedModes.size >= Object.keys(LearningMode).length && !hasBadge('all_modes')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'all_modes')!,
-        dateEarned: new Date()
-      });
-    }
-
-    // Check for time-based badges
-    const now = new Date();
-    const hour = now.getHours();
-
-    if (hour >= 0 && hour < 4 && !hasBadge('night_owl')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'night_owl')!,
-        dateEarned: new Date()
-      });
-    }
-
-    if (hour >= 4 && hour < 6 && !hasBadge('early_bird')) {
-      newBadges.push({
-        ...AVAILABLE_BADGES.find(badge => badge.id === 'early_bird')!,
-        dateEarned: new Date()
-      });
-    }
-
-    // Add new badges to the user
-    if (newBadges.length > 0) {
-      updatedUser.progress.badges = [...updatedUser.progress.badges, ...newBadges];
-    }
-
-    return updatedUser;
-  }
-
-  /**
-   * Calculate user statistics
-   * @param user User object
-   * @returns User statistics
-   */
-  public calculateUserStats(user: User): UserStats {
-    const words = user.progress.words;
-
-    // Get unique words the user has interacted with
-    const uniqueWordIds = new Set(words.map(w => w.wordId));
-
-    // Get words considered "learned" (score of 3 or higher)
-    const learnedWordIds = new Set<string>();
-    words.forEach(word => {
-      if (word.reviewHistory.some(review => review.score >= 3)) {
-        learnedWordIds.add(word.wordId);
-      }
-    });
-
-    // Calculate total reviews using a loop instead of reduce
-    let totalReviews = 0;
-    for (const word of words) {
-      totalReviews += word.reviewHistory.length;
-    }
-
-    // Calculate average score across all reviews
-    const allScores = words.flatMap(word => word.reviewHistory.map(review => review.score));
-
-    // Calculate sum using a loop instead of reduce
-    let scoreSum = 0;
-    for (const score of allScores) {
-      scoreSum += score;
-    }
-
-    const averageScore = allScores.length > 0
-      ? scoreSum / allScores.length
-      : 0;
-
-    // Calculate total time spent (ms -> minutes)
-    // Use loops instead of reduce for better type safety
-    let totalTimeMs = 0;
-    for (const word of words) {
-      let wordTimeMs = 0;
-      for (const review of word.reviewHistory) {
-        wordTimeMs += review.timeSpent;
-      }
-      totalTimeMs += wordTimeMs;
-    }
-    const totalTimeMinutes = Math.round(totalTimeMs / (1000 * 60));
-
-    return {
-      wordsLearned: learnedWordIds.size,
-      wordsReviewed: uniqueWordIds.size,
-      currentStreak: user.progress.streak,
-      longestStreak: user.progress.streak, // In a real app, you'd track the longest streak separately
-      averageScore,
-      totalTimeSpent: totalTimeMinutes,
-      level: user.progress.level,
-      experienceToNextLevel: this.getXpToNextLevel(user),
-      totalExperience: user.progress.experience
-    };
-  }
-
-  /**
-   * Get available badges with information about whether the user has earned them
-   * @param user User object
-   * @returns Array of badges with earned status
-   */
-  public getAvailableBadges(user: User): (Omit<Badge, 'dateEarned'> & { earned: boolean, earnedDate?: Date })[] {
-    const earnedBadges = user.progress.badges;
-
-    return AVAILABLE_BADGES.map(badge => {
-      const earnedBadge = earnedBadges.find(b => b.id === badge.id);
-      return {
-        ...badge,
-        earned: !!earnedBadge,
-        earnedDate: earnedBadge?.dateEarned
-      };
-    });
-  }
 }
 
-export default new GamificationService();
+// Export a singleton instance
+const gamificationService = new GamificationService();
+export default gamificationService;

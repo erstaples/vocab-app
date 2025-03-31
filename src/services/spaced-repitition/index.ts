@@ -1,22 +1,87 @@
-import { UserWordProgress, Review } from '../../models';
+import { UserWordProgress, Review, LearningMode } from '../../models';
+import apiService from '../api';
 
 /**
- * Implementation of the SuperMemo SM-2 algorithm for spaced repetition
- * https://en.wikipedia.org/wiki/SuperMemo#Algorithm_SM-2
+ * Client for the spaced repetition algorithm API
+ * The actual algorithm implementation is now on the backend
  */
 export class SpacedRepetitionService {
-  // Constants used in the SM-2 algorithm
+  // Constants used in the SM-2 algorithm (kept for reference)
   private static readonly MIN_EASE_FACTOR = 1.3;
   private static readonly INITIAL_EASE_FACTOR = 2.5;
 
   /**
-   * Calculate the next review date and update the word progress
+   * Legacy method: Calculate the next review date and update the word progress locally
    * @param wordProgress Current progress of the word
    * @param score Score from the user's response (0-5)
+   * @param timeSpent Time spent on the review in ms
    * @param learningMode The learning mode used for this review
    * @returns Updated word progress
    */
   public processReview(
+    wordProgress: UserWordProgress,
+    score: 0 | 1 | 2 | 3 | 4 | 5,
+    timeSpent: number,
+    learningMode: string
+  ): UserWordProgress;
+
+  /**
+   * API method: Record a review and update word progress via backend API
+   * @param userId User ID
+   * @param wordId Word ID
+   * @param score Score from the user's response (0-5)
+   * @param timeSpent Time spent on review in ms
+   * @param learningMode Learning mode used
+   * @returns Promise with updated word progress
+   */
+  public processReview(
+    userId: string,
+    wordId: string,
+    score: 0 | 1 | 2 | 3 | 4 | 5,
+    timeSpent: number,
+    learningMode: LearningMode
+  ): Promise<UserWordProgress>;
+
+  /**
+   * Implementation for both legacy and API versions of processReview
+   */
+  public processReview(
+    wordProgressOrUserId: UserWordProgress | string,
+    scoreOrWordId: 0 | 1 | 2 | 3 | 4 | 5 | string,
+    timeSpentOrScore: number,
+    learningModeOrTimeSpent: string | number | LearningMode,
+    apiLearningMode?: LearningMode
+  ): UserWordProgress | Promise<UserWordProgress> {
+    // If the first parameter is a UserWordProgress object, use the legacy implementation
+    if (typeof wordProgressOrUserId !== 'string') {
+      console.warn('Using deprecated processReview method - update to use API version');
+      
+      const wordProgress = wordProgressOrUserId;
+      const score = scoreOrWordId as 0 | 1 | 2 | 3 | 4 | 5;
+      
+      return this.processReviewLocal(
+        wordProgress,
+        score,
+        timeSpentOrScore,
+        learningModeOrTimeSpent as string
+      );
+    }
+    // Otherwise, use the API implementation
+    else {
+      const userId = wordProgressOrUserId;
+      const wordId = scoreOrWordId as string;
+      const score = timeSpentOrScore as 0 | 1 | 2 | 3 | 4 | 5;
+      const apiTimeSpent = learningModeOrTimeSpent as number;
+      const mode = apiLearningMode!;
+      
+      return this.processReviewApi(userId, wordId, score, apiTimeSpent, mode);
+    }
+  }
+
+  /**
+   * Local implementation of SM-2 algorithm (for backward compatibility)
+   */
+  private processReviewLocal(
     wordProgress: UserWordProgress,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
@@ -69,6 +134,169 @@ export class SpacedRepetitionService {
   }
 
   /**
+   * API implementation of process review
+   */
+  private async processReviewApi(
+    userId: string,
+    wordId: string,
+    score: 0 | 1 | 2 | 3 | 4 | 5,
+    timeSpent: number,
+    learningMode: LearningMode
+  ): Promise<UserWordProgress> {
+    try {
+      const response = await apiService.recordReview(
+        userId,
+        wordId,
+        score,
+        timeSpent,
+        learningMode as string
+      );
+      
+      // The API returns the full user object with the updated word progress
+      // We need to find the specific word progress that was updated
+      const wordProgress = response.progress.words.find((w: any) => w.wordId === wordId);
+      
+      return wordProgress || this.createEmptyWordProgress(wordId);
+    } catch (error) {
+      console.error(`Error processing review for word ${wordId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy method: Initialize a new word progress object locally
+   * @param wordId ID of the word
+   * @returns New word progress object
+   */
+  public initializeWordProgress(wordId: string): UserWordProgress;
+
+  /**
+   * API method: Initialize a new word progress via backend API
+   * @param userId User ID
+   * @param wordId Word ID
+   * @returns Promise with new word progress
+   */
+  public initializeWordProgress(userId: string, wordId: string): Promise<UserWordProgress>;
+
+  /**
+   * Implementation of both versions of initializeWordProgress
+   */
+  public initializeWordProgress(param1: string, param2?: string): UserWordProgress | Promise<UserWordProgress> {
+    // If there's only one parameter, it's the wordId for the legacy version
+    if (!param2) {
+      console.warn('Using deprecated initializeWordProgress method - update to use API version');
+      return this.createEmptyWordProgress(param1);
+    } 
+    // Otherwise, it's the API version
+    else {
+      const userId = param1;
+      const wordId = param2;
+      return this.initializeWordProgressApi(userId, wordId);
+    }
+  }
+
+  /**
+   * API implementation of initialize word progress
+   */
+  private async initializeWordProgressApi(userId: string, wordId: string): Promise<UserWordProgress> {
+    try {
+      // Use the API to add a word to the user's learning queue
+      const response = await apiService.addWordToLearning(userId, wordId);
+      
+      // Find the newly added word progress
+      const wordProgress = response.progress.words.find((w: any) => w.wordId === wordId);
+      
+      return wordProgress || this.createEmptyWordProgress(wordId);
+    } catch (error) {
+      console.error(`Error initializing word progress for word ${wordId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy method: Get words due for review from a local array
+   * @param words Array of user word progress
+   * @param limit Maximum number of words to return
+   * @returns Array of word progress objects due for review
+   */
+  public getDueWords(words: UserWordProgress[], limit?: number): UserWordProgress[];
+
+  /**
+   * API method: Get words due for review from the backend
+   * @param userId User ID
+   * @param limit Maximum number of words to return
+   * @returns Promise with array of word progress objects and words
+   */
+  public getDueWords(userId: string, limit?: number): Promise<{ progress: UserWordProgress, word: any }[]>;
+
+  /**
+   * Implementation of both versions of getDueWords
+   */
+  public getDueWords(
+    userIdOrWords: string | UserWordProgress[],
+    limit?: number
+  ): UserWordProgress[] | Promise<{ progress: UserWordProgress, word: any }[]> {
+    // If the first parameter is an array, use the legacy implementation
+    if (Array.isArray(userIdOrWords)) {
+      console.warn('Using deprecated getDueWords method - update to use API version');
+      return this.getDueWordsLocal(userIdOrWords, limit);
+    } 
+    // Otherwise, use the API implementation
+    else {
+      const userId = userIdOrWords;
+      return this.getDueWordsApi(userId, limit);
+    }
+  }
+
+  /**
+   * Local implementation of get due words
+   */
+  private getDueWordsLocal(words: UserWordProgress[], limit?: number): UserWordProgress[] {
+    const now = new Date();
+
+    // Filter words due for review (next review date is today or earlier)
+    const dueWords = words.filter(word => word.nextReviewDate <= now)
+      // Sort by urgency (oldest first)
+      .sort((a, b) => a.nextReviewDate.getTime() - b.nextReviewDate.getTime());
+
+    // Return all due words or limit if specified
+    return limit ? dueWords.slice(0, limit) : dueWords;
+  }
+
+  /**
+   * API implementation of get due words
+   */
+  private async getDueWordsApi(userId: string, limit?: number): Promise<{ progress: UserWordProgress, word: any }[]> {
+    try {
+      return await apiService.getDueWords(userId, limit);
+    } catch (error) {
+      console.error('Error getting due words:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Creates an empty word progress object
+   * @param wordId Word ID
+   * @returns Empty word progress object
+   */
+  private createEmptyWordProgress(wordId: string): UserWordProgress {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return {
+      wordId,
+      easeFactor: SpacedRepetitionService.INITIAL_EASE_FACTOR,
+      interval: 0,
+      repetitions: 0,
+      nextReviewDate: tomorrow,
+      lastReviewDate: now,
+      reviewHistory: []
+    };
+  }
+
+  /**
    * Calculate the new interval based on the algorithm
    * @param currentInterval Current interval in days
    * @param repetitions Number of successful reviews
@@ -98,45 +326,8 @@ export class SpacedRepetitionService {
     // Ensure ease factor doesn't go below the minimum
     return Math.max(SpacedRepetitionService.MIN_EASE_FACTOR, newEaseFactor);
   }
-
-  /**
-   * Initialize a new word progress object
-   * @param wordId ID of the word
-   * @returns New word progress object
-   */
-  public initializeWordProgress(wordId: string): UserWordProgress {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    return {
-      wordId,
-      easeFactor: SpacedRepetitionService.INITIAL_EASE_FACTOR,
-      interval: 0,
-      repetitions: 0,
-      nextReviewDate: tomorrow,
-      lastReviewDate: now,
-      reviewHistory: []
-    };
-  }
-
-  /**
-   * Get words due for review
-   * @param words Array of user word progress
-   * @param limit Maximum number of words to return
-   * @returns Array of word progress objects due for review
-   */
-  public getDueWords(words: UserWordProgress[], limit?: number): UserWordProgress[] {
-    const now = new Date();
-
-    // Filter words due for review (next review date is today or earlier)
-    const dueWords = words.filter(word => word.nextReviewDate <= now)
-      // Sort by urgency (oldest first)
-      .sort((a, b) => a.nextReviewDate.getTime() - b.nextReviewDate.getTime());
-
-    // Return all due words or limit if specified
-    return limit ? dueWords.slice(0, limit) : dueWords;
-  }
 }
 
-export default new SpacedRepetitionService();
+// Export a singleton instance
+const spacedRepetitionService = new SpacedRepetitionService();
+export default spacedRepetitionService;

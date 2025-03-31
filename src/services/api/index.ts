@@ -34,7 +34,13 @@ class ApiService {
    * @param options Fetch options
    * @returns Fetch response data
    */
-  private async fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
+  /**
+   * Helper method to make fetch requests
+   * @param url API endpoint URL
+   * @param options Fetch options
+   * @returns Fetch response data
+   */
+  public async fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     try {
       const response = await fetch(`${API_BASE_URL}${url}`, options);
       
