@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "migrate": "node -e \"require('./services/migrations').runMigrations()\"",
+    "import-words": "node scripts/import-words.js"
   },
   "keywords": [
     "vocabulary",

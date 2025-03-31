@@ -115,8 +115,13 @@ class ApiService {
    * @returns Array of word progress objects and corresponding word data
    */
   public async getDueWords(userId: string, limit?: number): Promise<any[]> {
-    const queryParams = limit ? `?limit=${limit}` : '';
-    return this.fetchJSON<any[]>(`/users/${userId}/due-words${queryParams}`);
+    try {
+      const queryParams = limit ? `?limit=${limit}` : '';
+      return this.fetchJSON<any[]>(`/users/${userId}/due-words${queryParams}`);
+    } catch (error) {
+      console.error('Error getting due words:', error);
+      throw error;
+    }
   }
 
   /**
@@ -125,8 +130,17 @@ class ApiService {
    * @param count Number of new words to fetch
    * @returns Array of word objects
    */
-  public async getNewWords(userId: string, count: number = 5): Promise<any[]> {
-    return this.fetchJSON<any[]>(`/users/${userId}/new-words?count=${count}`);
+  public async getNewWords(userId: string, count: number = 5, maxDifficulty?: number): Promise<any[]> {
+    try {
+      let queryParams = `?count=${count}`;
+      if (maxDifficulty) {
+        queryParams += `&maxDifficulty=${maxDifficulty}`;
+      }
+      return this.fetchJSON<any[]>(`/users/${userId}/new-words${queryParams}`);
+    } catch (error) {
+      console.error('Error getting new words:', error);
+      throw error;
+    }
   }
 
   /**
@@ -135,14 +149,19 @@ class ApiService {
    * @param wordId ID of the word to add
    * @returns Updated user object
    */
-  public async addWordToLearning(userId: string, wordId: string): Promise<User> {
-    return this.fetchJSON<User>(`/users/${userId}/words`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ wordId })
-    });
+  public async addWordToLearning(userId: string, wordId: string): Promise<any> {
+    try {
+      return this.fetchJSON<any>(`/users/${userId}/words`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ wordId })
+      });
+    } catch (error) {
+      console.error('Error adding word to learning:', error);
+      throw error;
+    }
   }
 
   /**
@@ -160,19 +179,24 @@ class ApiService {
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: string
-  ): Promise<User> {
-    return this.fetchJSON<User>(`/users/${userId}/reviews`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        wordId,
-        score,
-        timeSpent,
-        learningMode
-      })
-    });
+  ): Promise<any> {
+    try {
+      return this.fetchJSON<any>(`/users/${userId}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          wordId,
+          score,
+          timeSpent,
+          learningMode
+        })
+      });
+    } catch (error) {
+      console.error('Error recording review:', error);
+      throw error;
+    }
   }
 
   /**
