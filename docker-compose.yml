@@ -22,7 +22,10 @@ services:
   api:
     build: 
       context: ./server
+      dockerfile: Dockerfile
     container_name: vocab-api
+    volumes:
+      - ./server:/app
     depends_on:
       - postgres
     environment:

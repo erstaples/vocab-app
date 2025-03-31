@@ -11,10 +11,15 @@ const router = express.Router();
  */
 router.get('/:userId/due-words', async (req, res) => {
   try {
+    console.log('GET /api/users/:userId/due-words route hit');
+    console.log('Request params:', req.params);
+    console.log('Request query:', req.query);
+    
     const { userId } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit) : null;
     
     const dueWords = await spacedRepetitionService.getDueWords(userId, limit);
+    console.log(`Due words for user ${userId}:`, dueWords);
     res.json(dueWords);
   } catch (error) {
     console.error(`Error getting due words for user ${req.params.userId}:`, error);
