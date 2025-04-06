@@ -57,7 +57,18 @@ const WordCard: React.FC<WordCardProps> = ({
               {word.etymology && (
                 <div className="etymology-container">
                   <h4>Etymology:</h4>
-                  <p className="etymology">{word.etymology}</p>
+                  <p><strong>Origin:</strong> {word.etymology.origin}</p>
+                  <p><strong>Period:</strong> {word.etymology.period}</p>
+                  {word.etymology.development && word.etymology.development.length > 0 && (
+                    <>
+                      <p><strong>Development:</strong></p>
+                      <ul>
+                        {word.etymology.development.map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </div>
               )}
             </>

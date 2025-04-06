@@ -1,3 +1,5 @@
+import { Etymology } from './Morpheme';
+
 export interface Word {
   id: string;
   value: string;
@@ -7,5 +9,5 @@ export interface Word {
   example: string;
   synonyms: string[];
   difficulty: 1 | 2 | 3 | 4 | 5; // 1-5 scale of difficulty
-  etymology?: string;
+  etymology?: Etymology;
 }

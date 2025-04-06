@@ -77,7 +77,7 @@ const Learn: React.FC = () => {
       currentWord.id,
       score,
       timeSpent,
-      LearningMode.FLASHCARD // Initial learning starts with flashcards
+      LearningMode.WORD_CONSTRUCTION // Use Word Construction Lab for learning
     );
 
     // Update session stats
@@ -210,9 +210,9 @@ const Learn: React.FC = () => {
       </div>
 
       <div className="learn-content">
-        {/* For initial learning, we use the flashcard mode */}
+        {/* Use Word Construction Lab for learning */}
         {getLearningModeComponent(
-          LearningMode.FLASHCARD,
+          LearningMode.WORD_CONSTRUCTION,
           currentWord,
           handleLearningComplete
         )}

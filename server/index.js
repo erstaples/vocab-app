@@ -10,12 +10,14 @@ const wordService = require('./services/word-service');
 const spacedRepetitionService = require('./services/spaced-repetition-service');
 const gamificationService = require('./services/gamification-service');
 const userService = require('./services/user-service');
+const morphemeService = require('./services/morpheme-service');
 
 // Routes
 const wordRoutes = require('./routes/words');
 const reviewRoutes = require('./routes/reviews');
 const gamificationRoutes = require('./routes/gamification');
 const userRoutes = require('./routes/users');
+const morphemeRoutes = require('./routes/morphemes');
 
 const app = express();
 const port = process.env.API_PORT || 3001;
@@ -128,6 +130,7 @@ app.use('/api/users', reviewRoutes);
 app.use('/api/users', gamificationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/words', wordRoutes);
+app.use('/api/morphemes', morphemeRoutes);
 
 // Demo user endpoint (direct path for easy access)
 app.post('/api/demo-user', async (req, res) => {

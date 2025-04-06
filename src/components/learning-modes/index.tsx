@@ -57,7 +57,18 @@ export const FlashcardMode: React.FC<LearningModeProps> = ({ word, onComplete })
             {word.etymology && (
               <>
                 <h3>Etymology:</h3>
-                <p>{word.etymology}</p>
+                <p><strong>Origin:</strong> {word.etymology.origin}</p>
+                <p><strong>Period:</strong> {word.etymology.period}</p>
+                {word.etymology.development.length > 0 && (
+                  <>
+                    <p><strong>Development:</strong></p>
+                    <ul>
+                      {word.etymology.development.map((step, i) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </>
             )}
 
@@ -334,6 +345,9 @@ export const SentenceFormationMode: React.FC<LearningModeProps> = ({ word, onCom
   );
 };
 
+// Import the new WordConstructionLab component
+import { WordConstructionLab } from './WordConstructionLab';
+
 // Factory function to get the appropriate learning mode component
 export const getLearningModeComponent = (
   mode: LearningMode,
@@ -349,7 +363,8 @@ export const getLearningModeComponent = (
       return <WordConnectionsMode word={word} onComplete={onComplete} />;
     case LearningMode.SENTENCE_FORMATION:
       return <SentenceFormationMode word={word} onComplete={onComplete} />;
-    // Additional modes would be implemented and added here
+    case LearningMode.WORD_CONSTRUCTION:
+      return <WordConstructionLab word={word} onComplete={onComplete} />;
     default:
       return <FlashcardMode word={word} onComplete={onComplete} />;
   }

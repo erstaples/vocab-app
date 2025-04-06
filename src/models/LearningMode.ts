@@ -4,5 +4,6 @@ export enum LearningMode {
   WORD_CONNECTIONS = "word_connections",
   SENTENCE_FORMATION = "sentence_formation",
   SYNONYM_ANTONYM = "synonym_antonym",
-  DEFINITION_MATCH = "definition_match"
+  DEFINITION_MATCH = "definition_match",
+  WORD_CONSTRUCTION = "word_construction"
 }
