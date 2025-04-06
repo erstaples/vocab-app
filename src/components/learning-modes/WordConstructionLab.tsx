@@ -64,49 +64,149 @@ export const WordConstructionLab: React.FC<WordConstructionLabProps> = ({ word, 
     onComplete(score, timeSpent);
   };
 
-  const renderMorphemeBlocks = () => {
+  const renderMeaningConstruction = () => {
     const sortedMorphemes = [...morphemes].sort((a, b) => a.position - b.position);
     return (
-      <div className="morpheme-blocks-container" key="morpheme-blocks">
-        {sortedMorphemes.map((morpheme) => {
-          console.log('Rendering morpheme block:', morpheme);
-          const isSelected = selectedMorpheme === morpheme.id;
-          return (
-            <div key={`morpheme-${morpheme.id}`} className="morpheme-block-wrapper">
-              <button
-                type="button"
-                className={`morpheme-block ${isSelected ? 'selected' : ''}`}
+      <div className="meaning-construction" key="meaning-construction">
+        <h3>Meaning Construction</h3>
+        <div className="meaning-layers">
+          {/* Layer 1: Morphemes */}
+          <div className="layer morpheme-layer">
+            {sortedMorphemes.map((morpheme, index) => (
+              <React.Fragment key={`morpheme-layer-${morpheme.id}`}>
+                <span
+                  className="morpheme-item"
+                  style={{
+                    backgroundColor: MORPHEME_COLORS[morpheme.type] || MORPHEME_COLORS.bound
+                  }}
+                >
+                  {morpheme.value}
+                </span>
+                {index < sortedMorphemes.length - 1 && (
+                  <span className="layer-separator">+</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Arrows */}
+          <div className="arrows-layer">
+            {sortedMorphemes.map((morpheme, index) => (
+              <div key={`arrow-${morpheme.id}`} className="arrow">↓</div>
+            ))}
+          </div>
+
+          {/* Layer 2: Meanings */}
+          <div className="layer meaning-layer">
+            {sortedMorphemes.map((morpheme, index) => (
+              <React.Fragment key={`meaning-layer-${morpheme.id}`}>
+                <span className="meaning-item">
+                  {morpheme.meaning}
+                </span>
+                {index < sortedMorphemes.length - 1 && (
+                  <span className="layer-separator">+</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Final Arrow */}
+          <div className="final-arrow">↓</div>
+
+          {/* Layer 3: Definition */}
+          <div className="layer definition-layer">
+            <span className="definition-item">"{word.definition}"</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVisualBreakdown = () => {
+    const sortedMorphemes = [...morphemes].sort((a, b) => a.position - b.position);
+    return (
+      <div className="visual-breakdown" key="visual-breakdown">
+        <div className="visual-breakdown-header">
+          <h3>Visual Breakdown</h3>
+          <button
+            className="copy-button"
+            onClick={() => {
+              const text = sortedMorphemes.map(m => m.value).join(' + ');
+              navigator.clipboard.writeText(text);
+            }}
+          >
+            Copy
+          </button>
+        </div>
+        <div className="morpheme-breakdown">
+          {sortedMorphemes.map((morpheme, index) => (
+            <React.Fragment key={`morpheme-${morpheme.id}`}>
+              <div
+                className="morpheme-block"
                 style={{
-                  backgroundColor: MORPHEME_COLORS[morpheme.type] || MORPHEME_COLORS.bound,
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.75rem 1.25rem',
-                  margin: '0.5rem',
-                  borderRadius: '0.5rem',
-                  display: 'inline-block',
-                  transition: 'all 0.3s ease',
-                  boxShadow: isSelected ? '0 0 0 3px rgba(66, 153, 225, 0.5)' : '0 2px 4px rgba(0,0,0,0.1)',
-                  transform: isSelected ? 'scale(1.05)' : 'scale(1)',
-                  color: 'white',
-                  fontWeight: '500',
-                  fontSize: '1rem',
-                  outline: 'none'
-                }}
-                onClick={() => {
-                  console.log('Morpheme block clicked:', morpheme);
-                  handleMorphemeClick(morpheme.id);
+                  backgroundColor: MORPHEME_COLORS[morpheme.type] || MORPHEME_COLORS.bound
                 }}
               >
                 {morpheme.value}
-              </button>
-              {isSelected && (
-                <div className="morpheme-tooltip">
-                  {morpheme.meaning}
-                </div>
+              </div>
+              {index < sortedMorphemes.length - 1 && (
+                <div className="morpheme-separator">+</div>
               )}
-            </div>
-          );
-        })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderMorphemeTable = () => {
+    const sortedMorphemes = [...morphemes].sort((a, b) => a.position - b.position);
+    return (
+      <div className="morpheme-table-container" key="morpheme-table">
+        <h3>Morpheme Analysis</h3>
+        <table className="morpheme-table">
+          <thead>
+            <tr>
+              <th>Morpheme</th>
+              <th>Type</th>
+              <th>Meaning</th>
+              <th>Example Words</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedMorphemes.map((morpheme) => (
+              <tr key={`table-row-${morpheme.id}`}>
+                <td>
+                  <span
+                    className="morpheme-cell"
+                    style={{
+                      backgroundColor: MORPHEME_COLORS[morpheme.type] || MORPHEME_COLORS.bound
+                    }}
+                  >
+                    {morpheme.value}
+                  </span>
+                </td>
+                <td>
+                  <span className="type-badge" style={{
+                    backgroundColor: MORPHEME_COLORS[morpheme.type] || MORPHEME_COLORS.bound
+                  }}>
+                    {morpheme.type}
+                  </span>
+                </td>
+                <td>{morpheme.meaning}</td>
+                <td>
+                  <div className="example-words">
+                    {(morpheme.examples || []).map((example, i) => (
+                      <span key={`example-${i}`} className="example-item">
+                        {example}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   };
@@ -173,10 +273,9 @@ export const WordConstructionLab: React.FC<WordConstructionLabProps> = ({ word, 
       </div>
 
       <div className="morpheme-section">
-        <h3>Morpheme Analysis</h3>
-        <div className="morpheme-blocks" key="morpheme-section">
-          {renderMorphemeBlocks()}
-        </div>
+        {renderVisualBreakdown()}
+        {renderMorphemeTable()}
+        {renderMeaningConstruction()}
       </div>
 
       {selectedMorpheme && (() => {
