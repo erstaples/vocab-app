@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Word, LearningMode } from '../../models';
+// Import the new WordConstructionLab component
+import { WordConstructionLab } from './WordConstructionLab';
 
 // Interfaces
 interface LearningModeProps {
@@ -344,9 +346,6 @@ export const SentenceFormationMode: React.FC<LearningModeProps> = ({ word, onCom
     </div>
   );
 };
-
-// Import the new WordConstructionLab component
-import { WordConstructionLab } from './WordConstructionLab';
 
 // Factory function to get the appropriate learning mode component
 export const getLearningModeComponent = (
