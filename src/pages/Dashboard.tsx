@@ -51,11 +51,23 @@ const Dashboard: React.FC = () => {
 
   // Separate effect for word of the day that only runs once
   useEffect(() => {
-    // Set word of the day
-    const newWords = wordService.getNewWords(1);
-    if (newWords.length > 0) {
-      setWordOfTheDay(newWords[0]);
-    }
+    const loadWordOfTheDay = async () => {
+      try {
+        if (!user) {
+          return;
+        }
+        const userId = user.id;
+        // Set word of the day
+        const newWords = await wordService.getNewWords(userId, 1, 5);
+        if (newWords.length > 0) {
+          setWordOfTheDay(newWords[0]);
+        }
+      } catch (error) {
+        console.error('Error loading word of the day:', error);
+      }
+    };
+
+    loadWordOfTheDay();
   }, []);
 
   // Handle starting a review session

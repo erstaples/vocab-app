@@ -51,19 +51,6 @@ export class WordService {
   }
 
   /**
-   * Get a batch of new words for the user to learn (legacy method)
-   * @param count Number of words to return
-   * @param excludeIds IDs of words to exclude (e.g., already known words)
-   * @param maxDifficulty Maximum difficulty level
-   * @returns Array of words
-   */
-  public getNewWords(
-    count: number,
-    excludeIds?: string[],
-    maxDifficulty?: 1 | 2 | 3 | 4 | 5
-  ): Word[];
-
-  /**
    * Get a batch of new words for the user to learn (API method)
    * @param userId User ID
    * @param count Number of words to return
