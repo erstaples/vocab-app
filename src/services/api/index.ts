@@ -42,16 +42,28 @@ class ApiService {
    */
   public async fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
     try {
+      console.log('Making API request to:', `${API_BASE_URL}${url}`);
       const response = await fetch(`${API_BASE_URL}${url}`, options);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('API response not OK:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: `${API_BASE_URL}${url}`,
+          errorText
+        });
         throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
-      return await response.json() as T;
+      const data = await response.json() as T;
+      console.log('API response data:', data);
+      return data;
     } catch (error) {
-      console.error('API fetch error:', error);
+      console.error('API fetch error:', {
+        url: `${API_BASE_URL}${url}`,
+        error: error instanceof Error ? error.message : error
+      });
       throw error;
     }
   }

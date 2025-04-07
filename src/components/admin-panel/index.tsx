@@ -31,10 +31,7 @@ const AdminPanel: React.FC = () => {
     text: string;
     type: string;
     meaning: string;
-  }>>([
-    { id: 1, text: 'in', type: 'prefix', meaning: 'not, without' },
-    { id: 2, text: 'sipid', type: 'root', meaning: 'taste (Latin)' }
-  ]);
+  }>>([]);
   
   const [newMorpheme, setNewMorpheme] = useState({
     text: '',
@@ -49,6 +46,7 @@ const AdminPanel: React.FC = () => {
       setIsLoading(true);
       try {
         const fetchedWords = await wordService.getAllWords();
+        console.log('Fetched words:', fetchedWords.map(w => ({ id: w.id, value: w.value })));
         setWords(fetchedWords);
       } catch (err) {
         setError('Failed to load words');
@@ -92,19 +90,50 @@ const AdminPanel: React.FC = () => {
   };
 
   // Handle edit mode toggle
-  const handleEditWord = (word: Word) => {
-    setSelectedWord(word);
-    setIsEditMode(true);
-    setView('add');
-    setWordForm({
-      text: word.value,
-      partOfSpeech: word.partOfSpeech,
-      definition: word.definition,
-      pronunciation: word.pronunciation,
-      origin: word.etymology?.origin || 'latin',
-      period: word.etymology?.period || 'ancient',
-      etymologyNotes: word.etymology?.development?.[0] || ''
+  const handleEditWord = async (word: Word) => {
+    setIsLoading(true);
+    setError(null);
+    console.log('Editing word:', {
+      id: word.id,
+      value: word.value,
+      type: typeof word.id
     });
+    
+    if (!word.id) {
+      setError('Invalid word ID');
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      console.log('Fetching morphemes for word ID:', word.id, 'Value:', word.value);
+      const wordMorphemes = await wordService.getWordMorphemes(word.id);
+      console.log('Fetched morphemes for word:', word.value, 'Morphemes:', wordMorphemes);
+      
+      setSelectedWord(word);
+      setIsEditMode(true);
+      setView('add');
+      setWordForm({
+        text: word.value,
+        partOfSpeech: word.partOfSpeech,
+        definition: word.definition,
+        pronunciation: word.pronunciation,
+        origin: word.etymology?.origin || 'latin',
+        period: word.etymology?.period || 'ancient',
+        etymologyNotes: word.etymology?.development?.[0] || ''
+      });
+      
+      // Clear existing morphemes before setting new ones
+      setMorphemes([]);
+      if (wordMorphemes && wordMorphemes.length > 0) {
+        setMorphemes(wordMorphemes);
+      }
+    } catch (err) {
+      setError('Failed to load word morphemes');
+      console.error('Error loading word morphemes:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle word update

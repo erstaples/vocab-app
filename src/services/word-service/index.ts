@@ -34,7 +34,9 @@ export class WordService {
    */
   public async getWordById(id: string): Promise<Word | undefined> {
     try {
+      console.log('Fetching word:', id);
       const word = await apiService.fetchJSON<Word>(`/words/${id}`);
+      console.log('Fetched word:', word);
       return word;
     } catch (error) {
       console.error(`Error fetching word ${id}:`, error);
@@ -225,6 +227,43 @@ export class WordService {
     } catch (error) {
       console.error(`Error updating word ${id}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Get morphemes for a word
+   * @param wordId Word ID
+   * @returns Promise with array of morphemes
+   */
+  public async getWordMorphemes(wordId: string): Promise<Array<{
+    id: number;
+    text: string;
+    type: string;
+    meaning: string;
+  }>> {
+    try {
+      console.log('Fetching morphemes for word:', wordId);
+      const response = await apiService.fetchJSON<Array<{
+        id: number;
+        value: string;
+        type: string;
+        meaning: string;
+      }>>(`/words/${wordId}/morphemes`);
+      console.log('Raw morpheme response:', response);
+      
+      const mappedMorphemes = response.map(m => ({
+        id: m.id,
+        text: m.value,
+        type: m.type,
+        meaning: m.meaning
+      }));
+      console.log('Mapped morphemes:', mappedMorphemes);
+      
+      return mappedMorphemes;
+    } catch (error) {
+      console.error(`Error fetching morphemes for word ${wordId}:`, error);
+      console.error('Full error:', error);
+      return [];
     }
   }
 

@@ -14,30 +14,37 @@ class WordService {
    * @returns {Promise<Array>} Array of words
    */
   async getAllWords(options = {}) {
-    const { limit, offset, difficulty } = options;
-    
-    let query = 'SELECT * FROM words';
-    const params = [];
-    
-    // Add difficulty filter if provided
-    if (difficulty) {
-      query += ' WHERE difficulty = $1';
-      params.push(difficulty);
-    }
-    
-    // Add order by
-    query += ' ORDER BY value ASC';
-    
-    // Add pagination
-    if (limit) {
-      query += ` LIMIT ${limit}`;
-      if (offset) {
-        query += ` OFFSET ${offset}`;
+    try {
+      const { limit, offset, difficulty } = options;
+      
+      let query = 'SELECT * FROM words';
+      const params = [];
+      
+      // Add difficulty filter if provided
+      if (difficulty) {
+        query += ' WHERE difficulty = $1';
+        params.push(difficulty);
       }
+      
+      // Add order by
+      query += ' ORDER BY value ASC';
+      
+      // Add pagination
+      if (limit) {
+        query += ` LIMIT ${limit}`;
+        if (offset) {
+          query += ` OFFSET ${offset}`;
+        }
+      }
+      
+      console.log('Executing query:', query, 'with params:', params);
+      const result = await db.query(query, params);
+      console.log('Found words:', result.rows.map(w => ({ id: w.id, value: w.value })));
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting all words:', error);
+      throw error;
     }
-    
-    const result = await db.query(query, params);
-    return result.rows;
   }
   
   /**
@@ -46,8 +53,21 @@ class WordService {
    * @returns {Promise<Object|null>} Word object or null if not found
    */
   async getWordById(id) {
-    const result = await db.query('SELECT * FROM words WHERE id = $1', [id]);
-    return result.rows.length > 0 ? result.rows[0] : null;
+    try {
+      console.log('Getting word by ID:', id);
+      const result = await db.query('SELECT * FROM words WHERE id = $1', [id]);
+      
+      if (result.rows.length === 0) {
+        console.log('No word found with ID:', id);
+        return null;
+      }
+      
+      console.log('Found word:', result.rows[0]);
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error getting word by ID:', id, error);
+      throw error;
+    }
   }
   
   /**
@@ -255,6 +275,52 @@ class WordService {
     const result = await db.query('DELETE FROM words WHERE id = $1 RETURNING id', [id]);
     return result.rows.length > 0;
   }
+  /**
+   * Get morphemes for a word
+   * @param {string} wordId Word ID
+   * @returns {Promise<Array>} Array of morphemes associated with the word
+   */
+  async getWordMorphemes(wordId) {
+    try {
+      console.log('Getting morphemes for word ID:', wordId);
+
+      // First check if the word exists
+      const word = await this.getWordById(wordId);
+      if (!word) {
+        console.log('Word not found with ID:', wordId);
+        return [];
+      }
+      console.log('Found word:', word.value);
+
+      // Check if any word-morpheme relationships exist
+      const checkQuery = `
+        SELECT COUNT(*)
+        FROM word_morphemes
+        WHERE word_id = $1
+      `;
+      const checkResult = await db.query(checkQuery, [wordId]);
+      console.log('Number of morpheme relationships:', checkResult.rows[0].count);
+
+      // Get the actual morphemes
+      const query = `
+        SELECT m.id, m.value, m.type, m.meaning, wm.position
+        FROM morphemes m
+        JOIN word_morphemes wm ON m.id = wm.morpheme_id
+        WHERE wm.word_id = $1
+        ORDER BY wm.position ASC
+      `;
+      
+      const result = await db.query(query, [wordId]);
+      console.log('Found morphemes for word', word.value + ':', result.rows);
+      
+      return result.rows;
+    } catch (error) {
+      console.error('Error getting word morphemes:', error);
+      console.error('Full error details:', error);
+      throw error;
+    }
+  }
+
   
   /**
    * Import words from a dataset

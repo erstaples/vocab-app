@@ -86,6 +86,33 @@ router.get('/:id/related', async (req, res) => {
 });
 
 /**
+ * @route   GET /api/words/:id/morphemes
+ * @desc    Get morphemes for a word
+ * @access  Public
+ */
+router.get('/:id/morphemes', async (req, res) => {
+  try {
+    const wordId = req.params.id;
+    
+    // First check if the word exists
+    const word = await wordService.getWordById(wordId);
+    if (!word) {
+      console.error(`Word not found with ID: ${wordId}`);
+      return res.status(404).json({ error: 'Word not found' });
+    }
+    
+    console.log(`Getting morphemes for word: ${word.value} (${wordId})`);
+    const morphemes = await wordService.getWordMorphemes(wordId);
+    console.log(`Found ${morphemes.length} morphemes for word ${word.value}`);
+    
+    res.json(morphemes);
+  } catch (error) {
+    console.error(`Error getting morphemes for word ${req.params.id}:`, error);
+    res.status(500).json({ error: 'Failed to get word morphemes' });
+  }
+});
+
+/**
  * @route   POST /api/words
  * @desc    Add a new word
  * @access  Protected (in a real app, would require authentication)

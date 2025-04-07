@@ -7,11 +7,11 @@ async function seedMorphemes() {
 
     // Word list to process
     const wordList = [
-      'abase', 'abate', 'aberrant', 'abeyance', 'abhor', 'abject', 'abjure', 'abnegate', 
-      'abrasive', 'abrogate', 'abstemious', 'abstruse', 'acerbic', 'acme', 'acquiesce', 
-      'acumen', 'adamant', 'admonish', 'adroit', 'adulation', 'ambiguous', 'benevolent', 
-      'diligent', 'eloquent', 'ephemeral', 'ineffable', 'loquacious', 'mellifluous', 
-      'meticulous', 'obfuscate', 'pernicious', 'pragmatic', 'quintessential', 'resilient', 
+      'abase', 'abate', 'aberrant', 'abeyance', 'abhor', 'abject', 'abjure', 'abnegate',
+      'abrasive', 'abrogate', 'abstemious', 'abstruse', 'acerbic', 'acme', 'acquiesce',
+      'acumen', 'adamant', 'admonish', 'adroit', 'adulation', 'ambiguous', 'benevolent',
+      'diligent', 'eloquent', 'ephemeral', 'ineffable', 'insipid', 'loquacious', 'mellifluous',
+      'meticulous', 'obfuscate', 'pernicious', 'pragmatic', 'quintessential', 'resilient',
       'serendipity', 'sonder', 'sycophant', 'tranquil', 'ubiquitous', 'verbose'
     ];
 
@@ -648,6 +648,14 @@ async function seedMorphemes() {
     ];
 
     // Word morpheme relationships
+    // First get all words from the database to map values to IDs
+    const wordsResult = await client.query('SELECT id, value FROM words');
+    const wordIdMap = {};
+    wordsResult.rows.forEach(word => {
+      wordIdMap[word.value] = word.id;
+    });
+    console.log('Word ID map:', wordIdMap);
+
     const wordMorphemeMap = {
       'abase': [
         { value: 'a', position: 0 },
@@ -834,6 +842,10 @@ async function seedMorphemes() {
         { value: 'verb', position: 0 },
         { value: 'os', position: 1 },
         { value: 'e', position: 2 }
+      ],
+      'insipid': [
+        { value: 'in', position: 0 },
+        { value: 'sipid', position: 1 }
       ]
     };
 
@@ -1231,9 +1243,9 @@ async function seedMorphemes() {
     // Get all words from the database
     console.log('Retrieving words from database...');
     const words = await client.query(
-      `SELECT id, value FROM words WHERE value = ANY($1)`,
-      [wordList]
+      `SELECT id, value FROM words`
     );
+    console.log('Found words:', words.rows.map(w => w.value));
 
     // Create a map of word values to their IDs
     const wordMap = {};
