@@ -1,6 +1,13 @@
 import { Word } from '../../models';
 import apiService from '../api';
 
+export interface WordWithMorphemes extends Omit<Word, 'id'> {
+  morphemes: {
+    id: number;
+    position: number;
+  }[];
+}
+
 /**
  * Service to handle word-related operations
  * Uses API service to fetch data from backend
@@ -140,24 +147,109 @@ export class WordService {
   }
 
   /**
-   * Add a new word
-   * @param word Word data (without ID)
+   * Create a new word with optional morphemes
+   * @param wordData Word data including optional morphemes
    * @returns Promise with the created word including its ID
    */
-  public async addWord(word: Omit<Word, 'id'>): Promise<Word> {
+  public async createWord(wordData: WordWithMorphemes): Promise<Word> {
     try {
+      // First create the word
+      const { morphemes, ...wordFields } = wordData;
       const newWord = await apiService.fetchJSON<Word>('/words', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(word)
+        body: JSON.stringify(wordFields)
       });
+
+      // If morphemes are provided, associate them with the word
+      if (morphemes && morphemes.length > 0) {
+        await apiService.fetchJSON(`/words/${newWord.id}/morphemes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            morphemes: morphemes.map(m => ({
+              morphemeId: m.id,
+              position: m.position
+            }))
+          })
+        });
+      }
+
       return newWord;
     } catch (error) {
-      console.error('Error adding word:', error);
+      console.error('Error creating word:', error);
       throw error;
     }
+  }
+
+  /**
+   * Update an existing word
+   * @param id Word ID
+   * @param wordData Updated word data
+   * @returns Promise with the updated word
+   */
+  public async updateWord(id: string, wordData: Partial<WordWithMorphemes>): Promise<Word> {
+    try {
+      const { morphemes, ...wordFields } = wordData;
+      
+      // Update word fields
+      const updatedWord = await apiService.fetchJSON<Word>(`/words/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(wordFields)
+      });
+
+      // If morphemes are provided, update word-morpheme associations
+      if (morphemes && morphemes.length > 0) {
+        await apiService.fetchJSON(`/words/${id}/morphemes`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            morphemes: morphemes.map(m => ({
+              morphemeId: m.id,
+              position: m.position
+            }))
+          })
+        });
+      }
+
+      return updatedWord;
+    } catch (error) {
+      console.error(`Error updating word ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a word
+   * @param id Word ID
+   * @returns Promise that resolves when deletion is complete
+   */
+  public async deleteWord(id: string): Promise<void> {
+    try {
+      await apiService.fetchJSON(`/words/${id}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      console.error(`Error deleting word ${id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * @deprecated Use createWord instead
+   */
+  public async addWord(word: Omit<Word, 'id'>): Promise<Word> {
+    console.warn('addWord is deprecated. Please use createWord instead.');
+    return this.createWord({ ...word, morphemes: [] });
   }
 }
 

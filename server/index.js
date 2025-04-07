@@ -132,6 +132,20 @@ app.use('/api/users', userRoutes);
 app.use('/api/words', wordRoutes);
 app.use('/api/morphemes', morphemeRoutes);
 
+// Route for word-morpheme associations
+app.post('/api/words/:id/morphemes', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { morphemes } = req.body;
+    
+    await morphemeService.addMorphemesToWord(id, morphemes);
+    res.json({ message: 'Morphemes added successfully' });
+  } catch (error) {
+    console.error('Error adding morphemes to word:', error);
+    res.status(500).json({ error: 'Failed to add morphemes to word' });
+  }
+});
+
 // Demo user endpoint (direct path for easy access)
 app.post('/api/demo-user', async (req, res) => {
   try {

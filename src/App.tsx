@@ -8,6 +8,7 @@ import Learn from './pages/Learn';
 import Review from './pages/Review';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import AdminPanel from './components/admin-panel';
 
 // Create an instance of the service
 const userProgressService = new UserProgressService();
@@ -129,6 +130,7 @@ const App: React.FC = () => {
             <Route path="/review" element={<Review />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin" element={<AdminPanel />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>

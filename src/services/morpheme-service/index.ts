@@ -1,6 +1,14 @@
 import { Morpheme, WordMorpheme, WordFamily, MorphemeType } from '../../models/Morpheme';
 import apiService from '../api';
 
+export interface MorphemeCreate {
+  value: string;
+  type: MorphemeType;
+  meaning: string;
+  languageOrigin: string;
+  examples: string[];
+}
+
 /**
  * Service to handle morpheme-related operations
  */
@@ -125,6 +133,26 @@ class MorphemeService {
       });
     } catch (error) {
       console.error('Error adding word family relationship:', error);
+      throw error;
+    }
+  }
+  /**
+   * Create a new morpheme
+   * @param data The morpheme data
+   * @returns Promise with the created morpheme
+   */
+  public async createMorpheme(data: MorphemeCreate): Promise<Morpheme> {
+    try {
+      const morpheme = await apiService.fetchJSON<Morpheme>('/morphemes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      return morpheme;
+    } catch (error) {
+      console.error('Error creating morpheme:', error);
       throw error;
     }
   }

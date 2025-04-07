@@ -1,0 +1,548 @@
+/* Admin Panel Styles */
+.admin-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--gray-900);
+  font-family: var(--font-family-base);
+}
+
+.admin-header {
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  color: var(--primary);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.admin-nav {
+  display: flex;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.admin-nav-item {
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--gray-700);
+  transition: var(--transition-base);
+  border-bottom: 2px solid transparent;
+}
+
+.admin-nav-item:hover {
+  background-color: var(--gray-50);
+  color: var(--primary);
+}
+
+.admin-nav-item.active {
+  background-color: var(--gray-50);
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
+.admin-section {
+  margin-bottom: 2rem;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-section-header h2 {
+  color: var(--gray-800);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.admin-form-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.admin-form-card h3 {
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.form-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.form-section h4 {
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.form-control::placeholder {
+  color: var(--gray-400);
+}
+
+/* Search section */
+.search-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.search-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  min-width: 200px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--gray-400);
+}
+
+.search-button {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background-color: white;
+  color: var(--gray-700);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.search-button:hover:not(:disabled) {
+  background-color: var(--gray-50);
+  border-color: var(--gray-400);
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.search-section .form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-section .form-group {
+  flex: 3;
+  margin-bottom: 0;
+}
+
+.search-section button {
+  flex: 0 0 auto;
+  margin-top: 1.75rem;
+}
+
+/* Word list styling */
+.word-list {
+  margin-bottom: 1.5rem;
+}
+
+.word-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--gray-50);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s;
+}
+
+.word-item:hover {
+  background-color: var(--gray-100);
+  transform: translateX(2px);
+}
+
+.word-info {
+  flex: 1;
+}
+
+.word-info h4 {
+  color: var(--gray-900);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.word-details {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.part-of-speech {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.definition {
+  color: var(--gray-600);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 400px;
+}
+
+.word-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-button,
+.delete-button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-button {
+  background-color: var(--gray-100);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.edit-button:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+.delete-button {
+  background-color: var(--gray-100);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.delete-button:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+.edit-button:disabled,
+.delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--gray-100);
+}
+
+.no-words {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray-500);
+  font-style: italic;
+  background-color: var(--gray-50);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+/* Morpheme specific styling */
+.morpheme-list {
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  padding: 0.5rem;
+}
+
+.morpheme-empty {
+  padding: 1rem;
+  text-align: center;
+  color: var(--gray-500);
+  font-style: italic;
+}
+
+.morpheme-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: var(--gray-50);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.morpheme-prefix {
+  font-weight: 600;
+  color: var(--primary);
+  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(67, 97, 238, 0.1);
+  border-radius: 4px;
+}
+
+.morpheme-root {
+  font-weight: 600;
+  color: var(--success);
+  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+.morpheme-suffix {
+  font-weight: 600;
+  color: var(--secondary);
+  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(114, 9, 183, 0.1);
+  border-radius: 4px;
+}
+
+.morpheme-infix {
+  font-weight: 600;
+  color: var(--warning);
+  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: rgba(255, 152, 0, 0.1);
+  border-radius: 4px;
+}
+
+.morpheme-info {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.morpheme-remove {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.morpheme-remove:hover {
+  color: var(--danger);
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.morpheme-add-section {
+  padding: 1.5rem;
+  background-color: var(--gray-50);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.morpheme-add-section h5 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Feedback messages */
+.error-message,
+.success-message {
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-message {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.success-message {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Buttons */
+.primary-button,
+.secondary-button,
+.text-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-size: 1rem;
+}
+
+.primary-button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+}
+
+.primary-button:disabled {
+  background-color: var(--gray-400);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.primary-button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.primary-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.secondary-button {
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.secondary-button:disabled {
+  color: var(--gray-400);
+  border-color: var(--gray-300);
+  cursor: not-allowed;
+  background-color: var(--gray-50);
+}
+
+.secondary-button:hover {
+  background-color: rgba(67, 97, 238, 0.05);
+}
+
+.text-button {
+  background: none;
+  border: none;
+  color: var(--gray-600);
+}
+
+.text-button:hover {
+  color: var(--gray-900);
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 1rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .admin-nav {
+    flex-wrap: wrap;
+  }
+  
+  .admin-nav-item {
+    min-width: 50%;
+  }
+  
+  .admin-form-card {
+    padding: 1.5rem;
+  }
+}
