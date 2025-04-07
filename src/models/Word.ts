@@ -1,7 +1,7 @@
 import { Etymology } from './Morpheme';
 
 export interface Word {
-  id: string;
+  id: number;
   value: string;
   definition: string;
   partOfSpeech: string;

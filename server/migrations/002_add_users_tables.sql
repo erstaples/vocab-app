@@ -79,16 +79,6 @@ CREATE TABLE user_badges (
 -- Create index for user_badges
 CREATE INDEX idx_user_badges_user_id ON user_badges(user_id);
 
--- Assumes words table exists with an integer primary key
--- If you need to create the words table, uncomment and modify this section:
-/*
-CREATE TABLE words (
-    id SERIAL PRIMARY KEY,
-    word VARCHAR(255) NOT NULL,
-    -- Add other columns as needed
-);
-*/
-
 -- Create word_progress table
 CREATE SEQUENCE word_progress_id_seq;
 CREATE TABLE word_progress (

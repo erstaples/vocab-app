@@ -73,7 +73,7 @@ const AdminPanel: React.FC = () => {
   }, [searchQuery]);
 
   // Handle word deletion
-  const handleDeleteWord = async (wordId: string) => {
+  const handleDeleteWord = async (wordId: number) => {
     if (!window.confirm('Are you sure you want to delete this word?')) return;
     
     setIsLoading(true);

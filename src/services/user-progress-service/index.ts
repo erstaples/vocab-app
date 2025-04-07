@@ -134,7 +134,7 @@ export class UserProgressService {
    * @param wordId ID of the word to add
    * @returns Promise with updated user object
    */
-  public async addWordToLearning(wordId: string): Promise<User> {
+  public async addWordToLearning(wordId: number): Promise<User> {
     try {
       const demoUserId = localStorage.getItem('demo_user_id');
       if (!demoUserId) {
@@ -157,7 +157,7 @@ export class UserProgressService {
    * @returns Promise with updated user object
    */
   public async recordReview(
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode
@@ -210,7 +210,7 @@ export class UserProgressService {
       // Fetch full word data for each progress entry
       const result = await Promise.all(
         sortedWords.map(async (progress) => {
-          const word = await apiService.fetchJSON(`/words/${progress.wordId}`);
+          const word = await apiService.fetchJSON(`/words/${progress.wordId.toString()}`);
           return { progress, word };
         })
       );

@@ -47,7 +47,7 @@ class MorphemeService {
    * @param wordId The ID of the word
    * @returns Promise with array of morphemes and their positions
    */
-  public async getMorphemesForWord(wordId: string): Promise<WordMorpheme[]> {
+  public async getMorphemesForWord(wordId: number): Promise<WordMorpheme[]> {
     try {
       const morphemes = await apiService.fetchJSON<WordMorpheme[]>(`/morphemes/word/${wordId}`);
       return morphemes;
@@ -101,7 +101,7 @@ class MorphemeService {
    * @param wordId The ID of the word
    * @returns Promise with array of related words and their relationship types
    */
-  public async getWordFamilies(wordId: string): Promise<WordFamily[]> {
+  public async getWordFamilies(wordId: number): Promise<WordFamily[]> {
     try {
       const families = await apiService.fetchJSON<WordFamily[]>(`/morphemes/word/${wordId}/family`);
       return families;

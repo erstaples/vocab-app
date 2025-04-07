@@ -194,7 +194,7 @@ export class WordService {
    * @param wordData Updated word data
    * @returns Promise with the updated word
    */
-  public async updateWord(id: string, wordData: Partial<WordWithMorphemes>): Promise<Word> {
+  public async updateWord(id: number, wordData: Partial<WordWithMorphemes>): Promise<Word> {
     try {
       const { morphemes, ...wordFields } = wordData;
       
@@ -235,7 +235,7 @@ export class WordService {
    * @param wordId Word ID
    * @returns Promise with array of morphemes
    */
-  public async getWordMorphemes(wordId: string): Promise<Array<{
+  public async getWordMorphemes(wordId: number): Promise<Array<{
     id: number;
     text: string;
     type: string;
@@ -272,7 +272,7 @@ export class WordService {
    * @param id Word ID
    * @returns Promise that resolves when deletion is complete
    */
-  public async deleteWord(id: string): Promise<void> {
+  public async deleteWord(id: number): Promise<void> {
     try {
       await apiService.fetchJSON(`/words/${id}`, {
         method: 'DELETE'

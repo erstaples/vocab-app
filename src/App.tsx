@@ -22,7 +22,7 @@ export const AppContext = React.createContext<{
   updateUser: (userData: Partial<User>) => void;
   updatePreferences: (preferences: Partial<User['preferences']>) => void;
   recordReview: (
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode
@@ -82,7 +82,7 @@ const App: React.FC = () => {
 
   // Record a word review
   const recordReview = async (
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode

@@ -167,7 +167,7 @@ class ApiService {
    * @param wordId ID of the word to add
    * @returns Updated user object
    */
-  public async addWordToLearning(userId: string, wordId: string): Promise<any> {
+  public async addWordToLearning(userId: string, wordId: number): Promise<any> {
     try {
       return this.fetchJSON<any>(`/users/${userId}/words`, {
         method: 'POST',
@@ -193,7 +193,7 @@ class ApiService {
    */
   public async recordReview(
     userId: string,
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: string
