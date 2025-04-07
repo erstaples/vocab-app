@@ -12,7 +12,7 @@ CREATE TABLE morphemes (
 
 -- Create word-morpheme relations table
 CREATE TABLE word_morphemes (
-  word_id VARCHAR(255) REFERENCES words(id) ON DELETE CASCADE,
+  word_id INTEGER REFERENCES words(id) ON DELETE CASCADE,
   morpheme_id INTEGER REFERENCES morphemes(id) ON DELETE CASCADE,
   position INTEGER NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -21,8 +21,8 @@ CREATE TABLE word_morphemes (
 
 -- Create word family relations table
 CREATE TABLE word_families (
-  base_word_id VARCHAR(255) REFERENCES words(id) ON DELETE CASCADE,
-  related_word_id VARCHAR(255) REFERENCES words(id) ON DELETE CASCADE,
+  base_word_id INTEGER REFERENCES words(id) ON DELETE CASCADE,
+  related_word_id INTEGER REFERENCES words(id) ON DELETE CASCADE,
   relationship_type VARCHAR(20) NOT NULL CHECK (relationship_type IN ('derivative', 'compound', 'variant')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (base_word_id, related_word_id)

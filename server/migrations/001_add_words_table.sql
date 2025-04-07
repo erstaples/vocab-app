@@ -1,6 +1,6 @@
 -- Create words table
 CREATE TABLE IF NOT EXISTS words (
-    id VARCHAR(255) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     value VARCHAR(255) NOT NULL,
     definition TEXT NOT NULL,
     part_of_speech VARCHAR(50) NOT NULL,
