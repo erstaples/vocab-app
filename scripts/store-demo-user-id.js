@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Get the demo user ID from command line argument or use the one from the previous run
-const demoUserId = process.argv[2] || '6d352c36-ad17-40bc-885e-d49c993ea4ca';
+const demoUserId = process.argv[2] || 1001;
 
 // Create a simple HTML file to set the localStorage value
 const htmlContent = `
