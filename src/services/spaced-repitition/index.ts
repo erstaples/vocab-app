@@ -36,7 +36,7 @@ export class SpacedRepetitionService {
    */
   public processReview(
     userId: string,
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode
@@ -47,7 +47,7 @@ export class SpacedRepetitionService {
    */
   public processReview(
     wordProgressOrUserId: UserWordProgress | string,
-    scoreOrWordId: 0 | 1 | 2 | 3 | 4 | 5 | string,
+    scoreOrWordId: 0 | 1 | 2 | 3 | 4 | 5 | number,
     timeSpentOrScore: number,
     learningModeOrTimeSpent: string | number | LearningMode,
     apiLearningMode?: LearningMode
@@ -69,7 +69,7 @@ export class SpacedRepetitionService {
     // Otherwise, use the API implementation
     else {
       const userId = wordProgressOrUserId;
-      const wordId = scoreOrWordId as string;
+      const wordId = scoreOrWordId as number;
       const score = timeSpentOrScore as 0 | 1 | 2 | 3 | 4 | 5;
       const apiTimeSpent = learningModeOrTimeSpent as number;
       const mode = apiLearningMode!;
@@ -138,7 +138,7 @@ export class SpacedRepetitionService {
    */
   private async processReviewApi(
     userId: string,
-    wordId: string,
+    wordId: number,
     score: 0 | 1 | 2 | 3 | 4 | 5,
     timeSpent: number,
     learningMode: LearningMode
@@ -154,7 +154,7 @@ export class SpacedRepetitionService {
       
       // The API returns the full user object with the updated word progress
       // We need to find the specific word progress that was updated
-      const wordProgress = response.progress.words.find((w: any) => w.wordId === wordId);
+      const wordProgress = response.progress.words.find((w: any) => w.wordId === Number(wordId));
       
       return wordProgress || this.createEmptyWordProgress(wordId);
     } catch (error) {
@@ -168,7 +168,7 @@ export class SpacedRepetitionService {
    * @param wordId ID of the word
    * @returns New word progress object
    */
-  public initializeWordProgress(wordId: string): UserWordProgress;
+  public initializeWordProgress(wordId: number): UserWordProgress;
 
   /**
    * API method: Initialize a new word progress via backend API
@@ -176,21 +176,21 @@ export class SpacedRepetitionService {
    * @param wordId Word ID
    * @returns Promise with new word progress
    */
-  public initializeWordProgress(userId: string, wordId: string): Promise<UserWordProgress>;
+  public initializeWordProgress(userId: string, wordId: number): Promise<UserWordProgress>;
 
   /**
    * Implementation of both versions of initializeWordProgress
    */
-  public initializeWordProgress(param1: string, param2?: string): UserWordProgress | Promise<UserWordProgress> {
+  public initializeWordProgress(param1: string | number, param2?: number): UserWordProgress | Promise<UserWordProgress> {
     // If there's only one parameter, it's the wordId for the legacy version
     if (!param2) {
       console.warn('Using deprecated initializeWordProgress method - update to use API version');
-      return this.createEmptyWordProgress(param1);
-    } 
+      return this.createEmptyWordProgress(param1 as number);
+    }
     // Otherwise, it's the API version
     else {
-      const userId = param1;
-      const wordId = param2;
+      const userId = param1 as string;
+      const wordId = param2 as number;
       return this.initializeWordProgressApi(userId, wordId);
     }
   }
@@ -198,13 +198,13 @@ export class SpacedRepetitionService {
   /**
    * API implementation of initialize word progress
    */
-  private async initializeWordProgressApi(userId: string, wordId: string): Promise<UserWordProgress> {
+  private async initializeWordProgressApi(userId: string, wordId: number): Promise<UserWordProgress> {
     try {
       // Use the API to add a word to the user's learning queue
       const response = await apiService.addWordToLearning(userId, wordId);
       
       // Find the newly added word progress
-      const wordProgress = response.progress.words.find((w: any) => w.wordId === wordId);
+      const wordProgress = response.progress.words.find((w: any) => w.wordId === Number(wordId));
       
       return wordProgress || this.createEmptyWordProgress(wordId);
     } catch (error) {
@@ -280,7 +280,7 @@ export class SpacedRepetitionService {
    * @param wordId Word ID
    * @returns Empty word progress object
    */
-  private createEmptyWordProgress(wordId: string): UserWordProgress {
+  private createEmptyWordProgress(wordId: number): UserWordProgress {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);

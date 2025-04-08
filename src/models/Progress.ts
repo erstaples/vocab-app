@@ -1,7 +1,7 @@
 import { LearningMode } from './LearningMode';
 
 export interface UserWordProgress {
-  wordId: string;
+  wordId: number;
   easeFactor: number; // SM-2 algorithm parameter
   interval: number; // Days until next review
   repetitions: number; // Number of successful reviews in a row

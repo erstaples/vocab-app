@@ -302,7 +302,7 @@ class GamificationService {
     const hasBadge = (badgeId: string) => earnedBadgeIds.includes(badgeId);
 
     // Get unique words the user has learned (with score of 3 or higher)
-    const learnedWordIds = new Set<string>();
+    const learnedWordIds = new Set<number>();
     user.progress.words.forEach(word => {
       if (word.reviewHistory.some(review => review.score >= 3)) {
         learnedWordIds.add(word.wordId);
@@ -358,10 +358,10 @@ class GamificationService {
     const words = user.progress.words;
 
     // Get unique words the user has interacted with
-    const uniqueWordIds = new Set(words.map(w => w.wordId));
+    const uniqueWordIds = new Set<number>(words.map(w => w.wordId));
 
     // Get words considered "learned" (score of 3 or higher)
-    const learnedWordIds = new Set<string>();
+    const learnedWordIds = new Set<number>();
     words.forEach(word => {
       if (word.reviewHistory.some(review => review.score >= 3)) {
         learnedWordIds.add(word.wordId);
