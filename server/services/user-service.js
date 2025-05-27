@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const db = require('./database');
 const spacedRepetitionService = require('./spaced-repetition-service');
 const gamificationService = require('./gamification-service');
