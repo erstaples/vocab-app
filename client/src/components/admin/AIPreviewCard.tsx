@@ -88,6 +88,22 @@ export function AIPreviewCard({
                   {word.exists && <Badge variant="warning" size="sm">Already Exists</Badge>}
                 </div>
                 <p className="ai-preview__suggestion-def">{word.definition}</p>
+                {word.morphemes && word.morphemes.length > 0 && (
+                  <div className="ai-preview__suggestion-morphemes">
+                    {word.morphemes.map((m, i) => (
+                      <Badge
+                        key={i}
+                        variant={getTypeColor(m.type)}
+                        size="sm"
+                      >
+                        {m.text}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {word.etymology && (
+                  <p className="ai-preview__suggestion-etymology">{word.etymology}</p>
+                )}
               </div>
             </label>
           ))}

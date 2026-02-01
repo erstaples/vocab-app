@@ -95,6 +95,17 @@
   font-size: var(--text-sm);
 }
 
+.admin-table__morphemes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 200px;
+}
+
+.admin-table__no-morphemes {
+  color: var(--color-gray-400);
+}
+
 .admin-table__actions {
   display: flex;
   gap: var(--spacing-xs);

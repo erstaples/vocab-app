@@ -138,6 +138,22 @@
   margin: 0;
 }
 
+.ai-preview__suggestion-morphemes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.ai-preview__suggestion-etymology {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0.5rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-border);
+}
+
 /* Root Morpheme */
 .ai-preview__root {
   display: flex;

@@ -180,6 +180,7 @@ export default function AdminWords() {
             <tr>
               <th>Word</th>
               <th>Part of Speech</th>
+              <th>Morphemes</th>
               <th>Difficulty</th>
               <th>Definition</th>
               <th>Actions</th>
@@ -198,6 +199,23 @@ export default function AdminWords() {
                   </td>
                   <td>
                     <Badge variant="default">{word.partOfSpeech}</Badge>
+                  </td>
+                  <td className="admin-table__morphemes">
+                    {word.morphemes.length === 0 ? (
+                      <span className="admin-table__no-morphemes">-</span>
+                    ) : (
+                      word.morphemes
+                        .sort((a, b) => a.position - b.position)
+                        .map(m => (
+                          <Badge
+                            key={m.id}
+                            variant={m.type === 'prefix' ? 'primary' : m.type === 'root' ? 'success' : 'secondary'}
+                            size="sm"
+                          >
+                            {m.morpheme}
+                          </Badge>
+                        ))
+                    )}
                   </td>
                   <td>{'*'.repeat(word.difficulty)}</td>
                   <td className="admin-table__definition">
