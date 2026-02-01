@@ -1,0 +1,129 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+}
+
+/* Sizes */
+.badge--sm {
+  padding: 2px 8px;
+  font-size: var(--text-xs);
+}
+
+.badge--md {
+  padding: 4px 12px;
+  font-size: var(--text-sm);
+}
+
+.badge--lg {
+  padding: 6px 16px;
+  font-size: var(--text-base);
+}
+
+/* Variants */
+.badge--default {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.badge--primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.badge--secondary {
+  background-color: #d1fae5;
+  color: var(--color-secondary-dark);
+}
+
+.badge--success {
+  background-color: #d1fae5;
+  color: var(--color-secondary-dark);
+}
+
+.badge--warning {
+  background-color: #fef3c7;
+  color: var(--color-warning-dark);
+}
+
+.badge--danger {
+  background-color: #fee2e2;
+  color: var(--color-danger-dark);
+}
+
+/* Achievement Badge */
+.achievement-badge {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
+  opacity: 0.5;
+  filter: grayscale(1);
+  transition: all var(--transition-normal);
+}
+
+.achievement-badge--earned {
+  opacity: 1;
+  filter: none;
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.achievement-badge__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.achievement-badge__icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.achievement-badge__icon-placeholder {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-gray-400);
+}
+
+.achievement-badge--earned .achievement-badge__icon {
+  background-color: var(--color-primary-light);
+}
+
+.achievement-badge--earned .achievement-badge__icon-placeholder {
+  color: var(--color-primary-dark);
+}
+
+.achievement-badge__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.achievement-badge__name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: 2px;
+}
+
+.achievement-badge__description {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.achievement-badge__date {
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  margin-top: var(--spacing-xs);
+  display: block;
+}

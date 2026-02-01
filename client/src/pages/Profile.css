@@ -1,0 +1,115 @@
+.profile {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.profile__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-gray-200);
+}
+
+.profile__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-3xl);
+  font-weight: 700;
+}
+
+.profile__info h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.profile__info p {
+  font-size: var(--text-base);
+  color: var(--color-gray-500);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.profile__member-since {
+  font-size: var(--text-sm);
+  color: var(--color-gray-400);
+}
+
+.profile__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.profile__card {
+  padding: var(--spacing-lg);
+}
+
+.profile__card h2 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: 0 0 var(--spacing-md);
+}
+
+.profile__card--stats,
+.profile__card--badges {
+  grid-column: 1 / -1;
+}
+
+.profile__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+}
+
+.profile__stat {
+  text-align: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-50);
+  border-radius: var(--radius-lg);
+}
+
+.profile__stat-value {
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.profile__stat-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-xs);
+}
+
+@media (max-width: 768px) {
+  .profile__header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile__card--stats,
+  .profile__card--badges {
+    grid-column: 1;
+  }
+
+  .profile__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

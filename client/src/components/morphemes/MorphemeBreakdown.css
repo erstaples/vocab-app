@@ -1,0 +1,117 @@
+.morpheme-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+.morpheme-breakdown__word {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.morpheme-breakdown__parts {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.morpheme-part {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border: 2px solid;
+  background-color: var(--color-white);
+  min-width: 80px;
+}
+
+.morpheme-part--animate {
+  opacity: 0;
+  animation: morphemeFadeIn 0.4s ease forwards;
+}
+
+.morpheme-part--prefix {
+  border-color: var(--color-morpheme-prefix);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.morpheme-part--root {
+  border-color: var(--color-morpheme-root);
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.morpheme-part--suffix {
+  border-color: var(--color-morpheme-suffix);
+  background-color: rgba(168, 85, 247, 0.1);
+}
+
+.morpheme-part__morpheme {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.morpheme-part--prefix .morpheme-part__morpheme {
+  color: var(--color-morpheme-prefix);
+}
+
+.morpheme-part--root .morpheme-part__morpheme {
+  color: var(--color-morpheme-root);
+}
+
+.morpheme-part--suffix .morpheme-part__morpheme {
+  color: var(--color-morpheme-suffix);
+}
+
+.morpheme-part__meaning {
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+.morpheme-breakdown__literal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background-color: var(--color-gray-100);
+  border-radius: var(--radius-md);
+}
+
+.morpheme-breakdown__literal-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.morpheme-breakdown__literal-value {
+  font-size: var(--text-base);
+  color: var(--color-gray-700);
+  font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .morpheme-breakdown__word {
+    font-size: var(--text-2xl);
+  }
+
+  .morpheme-part {
+    min-width: 60px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .morpheme-part__morpheme {
+    font-size: var(--text-base);
+  }
+
+  .morpheme-part__meaning {
+    font-size: var(--text-xs);
+  }
+}

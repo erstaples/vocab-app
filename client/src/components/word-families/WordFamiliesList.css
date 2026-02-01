@@ -1,0 +1,79 @@
+.word-families-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.word-families-list__header {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, var(--color-gray-50), var(--color-white));
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-gray-200);
+}
+
+.word-families-list__stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-md);
+}
+
+.word-families-list__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.word-families-list__stat-value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-morpheme-root);
+}
+
+.word-families-list__stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.word-families-list__intro {
+  font-size: var(--text-base);
+  color: var(--color-gray-600);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.word-families-list__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.word-families-list__loading,
+.word-families-list__error,
+.word-families-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2xl);
+  color: var(--color-gray-500);
+  gap: var(--spacing-md);
+}
+
+.word-families-list__error {
+  color: var(--color-danger);
+}
+
+@media (max-width: 600px) {
+  .word-families-list__stats {
+    gap: var(--spacing-lg);
+  }
+
+  .word-families-list__stat-value {
+    font-size: var(--text-2xl);
+  }
+}

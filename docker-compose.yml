@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vocab-builder-db
+    environment:
+      POSTGRES_USER: vocab_user
+      POSTGRES_PASSWORD: vocab_pass
+      POSTGRES_DB: vocab_builder
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seeds:/docker-entrypoint-initdb.d/seeds
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vocab_user -d vocab_builder']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

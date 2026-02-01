@@ -1,0 +1,80 @@
+.word-families-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.word-families-page__header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.word-families-page__header h1 {
+  font-size: var(--text-3xl);
+  color: var(--color-gray-900);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.word-families-page__header p {
+  font-size: var(--text-lg);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.word-families-page__start-btn {
+  margin-top: var(--spacing-md);
+}
+
+.word-families-page__content {
+  margin-bottom: var(--spacing-xl);
+}
+
+.word-families-page__tip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-lg);
+}
+
+.word-families-page__tip-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.word-families-page__tip-content {
+  font-size: var(--text-base);
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+.word-families-page__tip-content strong {
+  color: var(--color-primary-dark);
+}
+
+.word-families-page__tip-content em {
+  color: var(--color-morpheme-root);
+  font-style: normal;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .word-families-page {
+    padding: var(--spacing-md);
+  }
+
+  .word-families-page__header h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .word-families-page__tip {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .word-families-page__tip-icon {
+    align-self: center;
+  }
+}

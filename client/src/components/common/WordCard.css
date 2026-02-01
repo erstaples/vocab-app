@@ -1,0 +1,125 @@
+.word-card {
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-gray-200);
+  transition: all var(--transition-fast);
+}
+
+.word-card--clickable {
+  cursor: pointer;
+}
+
+.word-card--clickable:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+.word-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.word-card__word {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.word-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.word-card__difficulty {
+  color: var(--color-warning);
+  font-size: var(--text-sm);
+}
+
+.word-card__pronunciation {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  font-style: italic;
+  margin: 0 0 var(--spacing-md);
+}
+
+.word-card__definition {
+  margin-bottom: var(--spacing-md);
+}
+
+.word-card__definition p {
+  margin: 0;
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+.word-card__example {
+  font-style: italic;
+  color: var(--color-gray-500);
+  margin-top: var(--spacing-sm) !important;
+  padding-left: var(--spacing-md);
+  border-left: 2px solid var(--color-gray-200);
+}
+
+.word-card__morphemes {
+  margin-bottom: var(--spacing-md);
+}
+
+.word-card__morphemes h4 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-gray-600);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.word-card__morpheme-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.word-card__morpheme {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.word-card__morpheme--prefix {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.word-card__morpheme--root {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.word-card__morpheme--suffix {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.word-card__etymology {
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.word-card__etymology h4 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-gray-600);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.word-card__etymology p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-gray-600);
+}

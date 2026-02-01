@@ -1,0 +1,48 @@
+.level-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.level-progress__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.level-progress__badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.level-progress__level {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.level-progress__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.level-progress__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.level-progress__xp {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+}
+
+.level-progress__bar {
+  margin-left: calc(48px + var(--spacing-md));
+}

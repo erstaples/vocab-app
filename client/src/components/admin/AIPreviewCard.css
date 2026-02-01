@@ -1,0 +1,240 @@
+.ai-preview-card {
+  border: 2px solid var(--color-primary);
+  background: linear-gradient(180deg, var(--color-primary-bg, #f0f7ff) 0%, var(--color-surface) 100%);
+}
+
+.ai-preview__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+
+.ai-preview__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ai-preview__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ai-preview__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-preview__section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.ai-preview__text {
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ai-preview__text--italic {
+  font-style: italic;
+}
+
+/* Morpheme Breakdown */
+.ai-preview__morphemes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-preview__morpheme {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.ai-preview__morpheme-text {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.ai-preview__morpheme-meaning {
+  color: var(--color-text-secondary);
+}
+
+.ai-preview__morpheme-origin {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt, #f3f4f6);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Word Suggestions */
+.ai-preview__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ai-preview__suggestion {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-preview__suggestion:hover:not(.ai-preview__suggestion--exists) {
+  border-color: var(--color-primary);
+}
+
+.ai-preview__suggestion--exists {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-preview__suggestion input[type="checkbox"] {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.ai-preview__suggestion-content {
+  flex: 1;
+}
+
+.ai-preview__suggestion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.ai-preview__suggestion-word {
+  font-weight: 600;
+}
+
+.ai-preview__suggestion-def {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Root Morpheme */
+.ai-preview__root {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-success);
+}
+
+.ai-preview__root-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.ai-preview__root-meaning {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+/* Word Family */
+.ai-preview__family-words {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ai-preview__family-word {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-preview__family-word:hover:not(.ai-preview__family-word--exists) {
+  border-color: var(--color-primary);
+}
+
+.ai-preview__family-word--exists {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-preview__family-word input[type="checkbox"] {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.ai-preview__family-word-content {
+  flex: 1;
+}
+
+.ai-preview__family-word-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.ai-preview__family-word-text {
+  font-weight: 600;
+}
+
+.ai-preview__family-word-def {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 0.5rem;
+}
+
+.ai-preview__family-word-morphemes {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.ai-preview__family-word-morpheme {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  background: var(--color-surface-alt, #f3f4f6);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Actions */
+.ai-preview__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  margin-top: 1rem;
+}

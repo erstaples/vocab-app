@@ -1,0 +1,30 @@
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.page-shell__main {
+  flex: 1;
+  margin-left: 250px;
+  transition: margin-left var(--transition-normal);
+}
+
+.page-shell--collapsed .page-shell__main {
+  margin-left: 64px;
+}
+
+.page-shell__content {
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .page-shell__main {
+    margin-left: 0;
+  }
+
+  .page-shell__content {
+    padding: var(--spacing-md);
+  }
+}
