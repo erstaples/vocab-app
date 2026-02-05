@@ -17,17 +17,17 @@ INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('fatig', 'root', 'tire', 'Latin'),
 ('clast', 'root', 'break', 'Greek'),
 ('anthrop', 'root', 'human', 'Greek')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;
 
 -- Prefixes (3 new)
 INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('ob-', 'prefix', 'against, toward', 'Latin'),
 ('per-', 'prefix', 'through, thoroughly', 'Latin'),
 ('caco-', 'prefix', 'bad', 'Greek')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;
 
 -- Suffixes (2 new)
 INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('-acious', 'suffix', 'inclined to', 'Latin'),
 ('-ate', 'suffix', 'to make', 'Latin')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;

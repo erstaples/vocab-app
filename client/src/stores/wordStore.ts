@@ -48,6 +48,7 @@ interface CreateMorphemeInput {
   type: 'prefix' | 'root' | 'suffix';
   meaning: string;
   origin?: string;
+  canonicalId?: number | null;
 }
 
 interface UpdateMorphemeInput extends Partial<CreateMorphemeInput> {}

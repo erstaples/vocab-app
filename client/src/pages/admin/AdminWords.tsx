@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useWordStore } from '../../stores/wordStore';
 import { useAdminStore } from '../../stores/adminStore';
 import { Card, Button, Input, Select, Modal, ConfirmModal, Badge, Textarea } from '../../components/common';
-import type { WordWithDetails, PartOfSpeech } from '@vocab-builder/shared';
+import { MorphemeChip } from '../../components/admin/MorphemeChip';
+import type { WordWithDetails, PartOfSpeech, Morpheme } from '@vocab-builder/shared';
 import './Admin.css';
 
 export default function AdminWords() {
-  const { words, fetchWords, createWord, updateWord, deleteWord, isLoading, totalWords, currentPage } = useWordStore();
-  const { populateWord, isGenerating, aiConfigured, checkAIConfig, aiError, clearError } = useAdminStore();
+  const { words, fetchWords, createWord, updateWord, deleteWord, isLoading, totalWords, currentPage, morphemes, fetchMorphemes } = useWordStore();
+  const { populateWord, isGenerating, aiConfigured, checkAIConfig, aiError, clearError, updateWordMorphemes } = useAdminStore();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -23,10 +24,32 @@ export default function AdminWords() {
   });
   const [populateError, setPopulateError] = useState<string | null>(null);
 
+  // Morpheme editing state
+  const [selectedMorphemeIds, setSelectedMorphemeIds] = useState<number[]>([]);
+  const [morphemeSearch, setMorphemeSearch] = useState('');
+  const [noMorphemes, setNoMorphemes] = useState(false); // Flag for words that intentionally have no morphemes
+
   useEffect(() => {
     fetchWords(1, { search: search || undefined });
     checkAIConfig();
-  }, [fetchWords, checkAIConfig]);
+    fetchMorphemes();
+  }, [fetchWords, checkAIConfig, fetchMorphemes]);
+
+  // Filter morphemes based on search
+  const filteredMorphemes = useMemo(() => {
+    if (!morphemeSearch) return morphemes;
+    const searchLower = morphemeSearch.toLowerCase();
+    return morphemes.filter(
+      m => m.morpheme.toLowerCase().includes(searchLower) || m.meaning.toLowerCase().includes(searchLower)
+    );
+  }, [morphemes, morphemeSearch]);
+
+  // Get selected morphemes with details
+  const selectedMorphemes = useMemo(() => {
+    return selectedMorphemeIds
+      .map(id => morphemes.find(m => m.id === id))
+      .filter((m): m is Morpheme => m !== undefined);
+  }, [selectedMorphemeIds, morphemes]);
 
   const handlePopulateWithAI = async () => {
     if (!formData.word.trim()) {
@@ -67,6 +90,9 @@ export default function AdminWords() {
       definition: '',
       exampleSentence: '',
     });
+    setSelectedMorphemeIds([]);
+    setNoMorphemes(false);
+    setMorphemeSearch('');
     setIsModalOpen(true);
   };
 
@@ -82,6 +108,13 @@ export default function AdminWords() {
       definition: primaryDef?.definition || '',
       exampleSentence: primaryDef?.exampleSentence || '',
     });
+    // Load word's current morphemes
+    const morphemeIds = word.morphemes
+      .sort((a, b) => a.position - b.position)
+      .map(m => m.id);
+    setSelectedMorphemeIds(morphemeIds);
+    setNoMorphemes(false);
+    setMorphemeSearch('');
     setIsModalOpen(true);
   };
 
@@ -109,8 +142,14 @@ export default function AdminWords() {
     try {
       if (selectedWord) {
         await updateWord(selectedWord.id, wordData);
+        // Update morpheme associations
+        await updateWordMorphemes(selectedWord.id, noMorphemes ? [] : selectedMorphemeIds);
       } else {
-        await createWord(wordData);
+        const newWord = await createWord(wordData);
+        // Set morpheme associations for new word
+        if (selectedMorphemeIds.length > 0 && !noMorphemes) {
+          await updateWordMorphemes(newWord.id, selectedMorphemeIds);
+        }
       }
       setIsModalOpen(false);
       fetchWords(currentPage);
@@ -200,21 +239,22 @@ export default function AdminWords() {
                   <td>
                     <Badge variant="default">{word.partOfSpeech}</Badge>
                   </td>
-                  <td className="admin-table__morphemes">
+                  <td>
                     {word.morphemes.length === 0 ? (
                       <span className="admin-table__no-morphemes">-</span>
                     ) : (
-                      word.morphemes
-                        .sort((a, b) => a.position - b.position)
-                        .map(m => (
-                          <Badge
-                            key={m.id}
-                            variant={m.type === 'prefix' ? 'primary' : m.type === 'root' ? 'success' : 'secondary'}
-                            size="sm"
-                          >
-                            {m.morpheme}
-                          </Badge>
-                        ))
+                      <div className="admin-table__morphemes">
+                        {word.morphemes
+                          .sort((a, b) => a.position - b.position)
+                          .map(m => (
+                            <MorphemeChip
+                              key={m.id}
+                              morpheme={m}
+                              allMorphemes={morphemes}
+                              size="sm"
+                            />
+                          ))}
+                      </div>
                     )}
                   </td>
                   <td>{'*'.repeat(word.difficulty)}</td>
@@ -323,6 +363,122 @@ export default function AdminWords() {
             value={formData.etymology}
             onChange={e => setFormData({ ...formData, etymology: e.target.value })}
           />
+
+          {/* Morpheme Management Section */}
+          <div className="admin-form__morphemes">
+            <div className="admin-form__morphemes-header">
+              <label className="admin-form__label">Morphemes</label>
+              <label className="admin-form__no-morphemes-toggle">
+                <input
+                  type="checkbox"
+                  checked={noMorphemes}
+                  onChange={e => {
+                    setNoMorphemes(e.target.checked);
+                    if (e.target.checked) setSelectedMorphemeIds([]);
+                  }}
+                />
+                <span>No morphemes (simple word)</span>
+              </label>
+            </div>
+
+            {!noMorphemes && (
+              <>
+                {/* Current morphemes */}
+                {selectedMorphemes.length > 0 && (
+                  <div className="admin-form__selected-morphemes">
+                    {selectedMorphemes.map((m, index) => (
+                      <div key={m.id} className="admin-form__morpheme-tag">
+                        <MorphemeChip
+                          morpheme={m}
+                          allMorphemes={morphemes}
+                          size="sm"
+                          showMeaning
+                        />
+                        <button
+                          type="button"
+                          className="admin-form__morpheme-remove"
+                          onClick={() => {
+                            setSelectedMorphemeIds(ids => ids.filter((_, i) => i !== index));
+                          }}
+                          title="Remove morpheme"
+                        >
+                          ×
+                        </button>
+                        {index < selectedMorphemes.length - 1 && (
+                          <button
+                            type="button"
+                            className="admin-form__morpheme-move"
+                            onClick={() => {
+                              setSelectedMorphemeIds(ids => {
+                                const newIds = [...ids];
+                                [newIds[index], newIds[index + 1]] = [newIds[index + 1], newIds[index]];
+                                return newIds;
+                              });
+                            }}
+                            title="Move right"
+                          >
+                            →
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {selectedMorphemes.length > 0 && (
+                      <button
+                        type="button"
+                        className="admin-form__clear-morphemes"
+                        onClick={() => setSelectedMorphemeIds([])}
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Add morpheme search */}
+                <div className="admin-form__morpheme-picker">
+                  <Input
+                    placeholder="Search morphemes to add..."
+                    value={morphemeSearch}
+                    onChange={e => setMorphemeSearch(e.target.value)}
+                  />
+                  {morphemeSearch && (
+                    <div className="admin-form__morpheme-list">
+                      {filteredMorphemes.slice(0, 10).map(m => {
+                        const isVariant = m.canonicalId != null;
+                        const canonical = isVariant ? morphemes.find(cm => cm.id === m.canonicalId) : null;
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            className={`admin-form__morpheme-option ${selectedMorphemeIds.includes(m.id) ? 'admin-form__morpheme-option--selected' : ''}`}
+                            onClick={() => {
+                              if (!selectedMorphemeIds.includes(m.id)) {
+                                setSelectedMorphemeIds(ids => [...ids, m.id]);
+                              }
+                              setMorphemeSearch('');
+                            }}
+                            disabled={selectedMorphemeIds.includes(m.id)}
+                          >
+                            <MorphemeChip morpheme={m} allMorphemes={morphemes} size="sm" />
+                            <span className="admin-form__morpheme-option-meaning">
+                              {m.meaning}
+                              {isVariant && canonical && (
+                                <span className="admin-form__morpheme-option-variant"> (variant of {canonical.morpheme})</span>
+                              )}
+                            </span>
+                            {selectedMorphemeIds.includes(m.id) && <span className="admin-form__morpheme-option-added">✓</span>}
+                          </button>
+                        );
+                      })}
+                      {filteredMorphemes.length === 0 && (
+                        <div className="admin-form__morpheme-empty">No morphemes found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="admin-form__actions">
             <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>

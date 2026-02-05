@@ -19,7 +19,7 @@ INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('eso-', 'prefix', 'within', 'Greek'),
 ('ne-', 'prefix', 'not', 'Latin'),
 ('se-', 'prefix', 'apart', 'Latin')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;
 
 -- Additional roots
 INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
@@ -100,7 +100,7 @@ INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('quixot', 'root', 'idealistic, impractical', 'Spanish'),
 ('hackney', 'root', 'overused', 'English'),
 ('conund', 'root', 'puzzle, riddle', 'Latin')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;
 
 -- Additional suffixes
 INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
@@ -116,7 +116,7 @@ INSERT INTO morphemes (morpheme, type, meaning, origin) VALUES
 ('-escent', 'suffix', 'becoming', 'Latin'),
 ('-uous', 'suffix', 'full of', 'Latin'),
 ('-ile', 'suffix', 'capable of', 'Latin')
-ON CONFLICT (morpheme) DO NOTHING;
+ON CONFLICT (morpheme, COALESCE(origin, '')) DO NOTHING;
 
 -- ============================================
 -- PART 2: Word-morpheme associations for ALL remaining words

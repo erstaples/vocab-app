@@ -10,23 +10,49 @@ export const morphemesRouter = Router();
 morphemesRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next) => {
   try {
     const type = req.query.type as string;
+    const includeVariants = req.query.includeVariants === 'true';
+    const canonicalOnly = req.query.canonicalOnly === 'true';
 
     let whereClause = '';
+    const conditions: string[] = [];
     const params: unknown[] = [];
+    let paramIndex = 1;
 
     if (type) {
-      whereClause = 'WHERE type = $1';
+      conditions.push(`type = $${paramIndex}`);
       params.push(type);
+      paramIndex++;
     }
 
-    const morphemes = await query<Morpheme>(
-      `SELECT id, morpheme, type, meaning, origin, created_at as "createdAt"
+    if (canonicalOnly) {
+      conditions.push('canonical_id IS NULL');
+    }
+
+    if (conditions.length > 0) {
+      whereClause = 'WHERE ' + conditions.join(' AND ');
+    }
+
+    const morphemes = await query<Morpheme & { canonicalId: number | null }>(
+      `SELECT id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"
        FROM morphemes ${whereClause}
-       ORDER BY type, morpheme`,
+       ORDER BY COALESCE(canonical_id, id), canonical_id NULLS FIRST, morpheme`,
       params
     );
 
-    res.json(morphemes);
+    // If includeVariants, group canonical morphemes with their variants
+    if (includeVariants) {
+      const canonicalMorphemes = morphemes.filter(m => m.canonicalId === null);
+      const variants = morphemes.filter(m => m.canonicalId !== null);
+
+      const result = canonicalMorphemes.map(canonical => ({
+        ...canonical,
+        variants: variants.filter(v => v.canonicalId === canonical.id),
+      }));
+
+      res.json(result);
+    } else {
+      res.json(morphemes);
+    }
   } catch (error) {
     next(error);
   }
@@ -131,7 +157,7 @@ morphemesRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response
     const morphemeId = parseInt(req.params.id);
 
     const morpheme = await queryOne<Morpheme>(
-      `SELECT id, morpheme, type, meaning, origin, created_at as "createdAt"
+      `SELECT id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"
        FROM morphemes WHERE id = $1`,
       [morphemeId]
     );
@@ -140,7 +166,29 @@ morphemesRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response
       throw createError('Morpheme not found', 404);
     }
 
-    res.json(morpheme);
+    // Get variants if this is a canonical morpheme
+    const variants = await query<Morpheme>(
+      `SELECT id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"
+       FROM morphemes WHERE canonical_id = $1
+       ORDER BY morpheme`,
+      [morphemeId]
+    );
+
+    // Get canonical if this is a variant
+    let canonical = null;
+    if ((morpheme as Morpheme & { canonicalId: number | null }).canonicalId) {
+      canonical = await queryOne<Morpheme>(
+        `SELECT id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"
+         FROM morphemes WHERE id = $1`,
+        [(morpheme as Morpheme & { canonicalId: number | null }).canonicalId]
+      );
+    }
+
+    res.json({
+      ...morpheme,
+      variants: variants.length > 0 ? variants : undefined,
+      canonical: canonical || undefined,
+    });
   } catch (error) {
     next(error);
   }
@@ -149,7 +197,7 @@ morphemesRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response
 // POST /api/morphemes (admin only)
 morphemesRouter.post('/', authenticate, requireAdmin, async (req: AuthRequest, res: Response, next) => {
   try {
-    const { morpheme, type, meaning, origin } = req.body;
+    const { morpheme, type, meaning, origin, canonicalId } = req.body;
 
     if (!morpheme || !type || !meaning) {
       throw createError('Morpheme, type, and meaning are required', 400);
@@ -159,11 +207,19 @@ morphemesRouter.post('/', authenticate, requireAdmin, async (req: AuthRequest, r
       throw createError('Type must be prefix, root, or suffix', 400);
     }
 
+    // Verify canonical morpheme exists if provided
+    if (canonicalId) {
+      const canonical = await queryOne<{ id: number }>('SELECT id FROM morphemes WHERE id = $1', [canonicalId]);
+      if (!canonical) {
+        throw createError('Canonical morpheme not found', 404);
+      }
+    }
+
     const newMorpheme = await queryOne<Morpheme>(
-      `INSERT INTO morphemes (morpheme, type, meaning, origin)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, morpheme, type, meaning, origin, created_at as "createdAt"`,
-      [morpheme, type, meaning, origin || null]
+      `INSERT INTO morphemes (morpheme, type, meaning, origin, canonical_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"`,
+      [morpheme, type, meaning, origin || null, canonicalId || null]
     );
 
     res.status(201).json(newMorpheme);
@@ -176,10 +232,22 @@ morphemesRouter.post('/', authenticate, requireAdmin, async (req: AuthRequest, r
 morphemesRouter.put('/:id', authenticate, requireAdmin, async (req: AuthRequest, res: Response, next) => {
   try {
     const morphemeId = parseInt(req.params.id);
-    const { morpheme, type, meaning, origin } = req.body;
+    const { morpheme, type, meaning, origin, canonicalId } = req.body;
 
     if (type && !['prefix', 'root', 'suffix'].includes(type)) {
       throw createError('Type must be prefix, root, or suffix', 400);
+    }
+
+    // Verify canonical morpheme exists if provided
+    if (canonicalId) {
+      const canonical = await queryOne<{ id: number }>('SELECT id FROM morphemes WHERE id = $1', [canonicalId]);
+      if (!canonical) {
+        throw createError('Canonical morpheme not found', 404);
+      }
+      // Prevent circular reference
+      if (canonicalId === morphemeId) {
+        throw createError('A morpheme cannot be its own canonical form', 400);
+      }
     }
 
     const updatedMorpheme = await queryOne<Morpheme>(
@@ -187,10 +255,11 @@ morphemesRouter.put('/:id', authenticate, requireAdmin, async (req: AuthRequest,
        SET morpheme = COALESCE($1, morpheme),
            type = COALESCE($2, type),
            meaning = COALESCE($3, meaning),
-           origin = $4
-       WHERE id = $5
-       RETURNING id, morpheme, type, meaning, origin, created_at as "createdAt"`,
-      [morpheme, type, meaning, origin || null, morphemeId]
+           origin = $4,
+           canonical_id = $5
+       WHERE id = $6
+       RETURNING id, morpheme, type, meaning, origin, canonical_id as "canonicalId", created_at as "createdAt"`,
+      [morpheme, type, meaning, origin || null, canonicalId !== undefined ? canonicalId : null, morphemeId]
     );
 
     if (!updatedMorpheme) {

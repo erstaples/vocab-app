@@ -60,7 +60,14 @@ export interface Morpheme {
   type: MorphemeType;
   meaning: string;
   origin?: string;
+  canonicalId?: number | null;
   createdAt: Date;
+}
+
+// Morpheme with its variants loaded (for admin display)
+export interface MorphemeWithVariants extends Morpheme {
+  variants?: Morpheme[];
+  canonical?: Morpheme; // If this is a variant, the canonical morpheme
 }
 
 export interface MorphemeWithRelation extends Morpheme {
@@ -364,4 +371,36 @@ export interface AIPreview {
 export interface WordMorphemeUpdate {
   wordId: number;
   morphemeIds: number[];
+}
+
+// Morpheme Audit Types
+export interface MorphemeAuditSuggestion {
+  text: string;
+  type: MorphemeType;
+  meaning: string;
+  origin?: string;
+  canonicalForm?: string;
+  isVariant: boolean;
+}
+
+export interface WordAuditResult {
+  wordId: number;
+  word: string;
+  currentMorphemes: Array<{
+    id: number;
+    morpheme: string;
+    type: string;
+    meaning: string;
+    canonicalId?: number | null;
+  }>;
+  suggestedMorphemes: MorphemeAuditSuggestion[];
+  hasDiscrepancy: boolean;
+  discrepancyType?: 'missing' | 'incorrect' | 'extra' | 'order' | 'variant';
+  notes?: string;
+}
+
+export interface AuditResponse {
+  results: WordAuditResult[];
+  total: number;
+  discrepancyCount: number;
 }

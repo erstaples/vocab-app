@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useWordStore } from '../../stores/wordStore';
 import { Card, Button, Input, Select, Modal, ConfirmModal, Badge } from '../../components/common';
 import type { Morpheme, MorphemeType } from '@vocab-builder/shared';
@@ -12,43 +12,85 @@ export default function AdminMorphemes() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedMorpheme, setSelectedMorpheme] = useState<Morpheme | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAddingVariant, setIsAddingVariant] = useState(false);
   const [formData, setFormData] = useState({
     morpheme: '',
     type: 'root' as MorphemeType,
     meaning: '',
     origin: '',
+    canonicalId: null as number | null,
   });
 
   useEffect(() => {
     fetchMorphemes();
   }, [fetchMorphemes]);
 
-  const filteredMorphemes = morphemes.filter(m => {
-    const matchesSearch = !search ||
-      m.morpheme.toLowerCase().includes(search.toLowerCase()) ||
-      m.meaning.toLowerCase().includes(search.toLowerCase());
-    const matchesType = !typeFilter || m.type === typeFilter;
-    return matchesSearch && matchesType;
-  });
+  // Group morphemes: canonical morphemes with their variants
+  const groupedMorphemes = useMemo(() => {
+    const canonical = morphemes.filter(m => !m.canonicalId);
+    const variants = morphemes.filter(m => m.canonicalId);
+
+    return canonical.map(c => ({
+      ...c,
+      variants: variants.filter(v => v.canonicalId === c.id),
+    }));
+  }, [morphemes]);
+
+  // Filter grouped morphemes
+  const filteredMorphemes = useMemo(() => {
+    return groupedMorphemes.filter(m => {
+      const variantTexts = m.variants?.map(v => v.morpheme).join(' ') || '';
+      const matchesSearch = !search ||
+        m.morpheme.toLowerCase().includes(search.toLowerCase()) ||
+        m.meaning.toLowerCase().includes(search.toLowerCase()) ||
+        variantTexts.toLowerCase().includes(search.toLowerCase());
+      const matchesType = !typeFilter || m.type === typeFilter;
+      return matchesSearch && matchesType;
+    });
+  }, [groupedMorphemes, search, typeFilter]);
+
+  // Get canonical morphemes for the dropdown (only prefixes since they have variants)
+  const canonicalPrefixes = useMemo(() => {
+    return morphemes
+      .filter(m => m.type === 'prefix' && !m.canonicalId)
+      .map(m => ({ value: m.id.toString(), label: `${m.morpheme} (${m.meaning})` }));
+  }, [morphemes]);
 
   const handleOpenCreate = () => {
     setSelectedMorpheme(null);
+    setIsAddingVariant(false);
     setFormData({
       morpheme: '',
       type: 'root',
       meaning: '',
       origin: '',
+      canonicalId: null,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenAddVariant = (canonical: Morpheme) => {
+    setSelectedMorpheme(null);
+    setIsAddingVariant(true);
+    setFormData({
+      morpheme: '',
+      type: canonical.type,
+      meaning: canonical.meaning,
+      origin: canonical.origin || '',
+      canonicalId: canonical.id,
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (morpheme: Morpheme) => {
     setSelectedMorpheme(morpheme);
+    setIsAddingVariant(false);
     setFormData({
       morpheme: morpheme.morpheme,
       type: morpheme.type,
       meaning: morpheme.meaning,
       origin: morpheme.origin || '',
+      canonicalId: morpheme.canonicalId || null,
     });
     setIsModalOpen(true);
   };
@@ -62,13 +104,22 @@ export default function AdminMorphemes() {
     e.preventDefault();
     setIsLoading(true);
 
+    const morphemeData = {
+      morpheme: formData.morpheme,
+      type: formData.type,
+      meaning: formData.meaning,
+      origin: formData.origin || undefined,
+      canonicalId: formData.canonicalId,
+    };
+
     try {
       if (selectedMorpheme) {
-        await updateMorpheme(selectedMorpheme.id, formData);
+        await updateMorpheme(selectedMorpheme.id, morphemeData);
       } else {
-        await createMorpheme(formData);
+        await createMorpheme(morphemeData);
       }
       setIsModalOpen(false);
+      fetchMorphemes(); // Refresh to get updated groupings
     } catch (error) {
       console.error('Failed to save morpheme:', error);
     } finally {
@@ -139,12 +190,13 @@ export default function AdminMorphemes() {
       </Card>
 
       <Card className="admin-table-card" padding="none">
-        <table className="admin-table">
+        <table className="admin-table admin-table--morphemes">
           <thead>
             <tr>
-              <th>Morpheme</th>
+              <th>Canonical Morpheme</th>
               <th>Type</th>
               <th>Meaning</th>
+              <th>Variants (Assimilation Forms)</th>
               <th>Origin</th>
               <th>Actions</th>
             </tr>
@@ -161,6 +213,38 @@ export default function AdminMorphemes() {
                   </Badge>
                 </td>
                 <td>{morpheme.meaning}</td>
+                <td>
+                  {morpheme.variants && morpheme.variants.length > 0 ? (
+                    <div className="admin-table__variants">
+                      {morpheme.variants.map(v => (
+                        <span
+                          key={v.id}
+                          className="admin-table__variant"
+                          onClick={() => handleOpenEdit(v)}
+                          title="Click to edit"
+                        >
+                          {v.morpheme}
+                        </span>
+                      ))}
+                      <button
+                        className="admin-table__add-variant"
+                        onClick={() => handleOpenAddVariant(morpheme)}
+                        title="Add variant"
+                      >
+                        +
+                      </button>
+                    </div>
+                  ) : morpheme.type === 'prefix' ? (
+                    <button
+                      className="admin-table__add-variant-btn"
+                      onClick={() => handleOpenAddVariant(morpheme)}
+                    >
+                      + Add variants
+                    </button>
+                  ) : (
+                    <span className="admin-table__no-morphemes">-</span>
+                  )}
+                </td>
                 <td>{morpheme.origin || '-'}</td>
                 <td>
                   <div className="admin-table__actions">
@@ -187,32 +271,48 @@ export default function AdminMorphemes() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedMorpheme ? 'Edit Morpheme' : 'Add Morpheme'}
+        title={
+          isAddingVariant
+            ? 'Add Variant (Assimilation Form)'
+            : selectedMorpheme
+              ? 'Edit Morpheme'
+              : 'Add Morpheme'
+        }
         size="sm"
       >
         <form onSubmit={handleSubmit} className="admin-form">
+          {isAddingVariant && formData.canonicalId && (
+            <div className="admin-form__info">
+              Adding variant for: <strong>{morphemes.find(m => m.id === formData.canonicalId)?.morpheme}</strong>
+            </div>
+          )}
+
           <Input
-            label="Morpheme"
+            label={isAddingVariant ? 'Variant Form' : 'Morpheme'}
             value={formData.morpheme}
             onChange={e => setFormData({ ...formData, morpheme: e.target.value })}
-            placeholder="e.g., -tion, pre-, dict"
+            placeholder={isAddingVariant ? 'e.g., ac-, af-, ag-' : 'e.g., -tion, pre-, dict'}
             required
           />
 
-          <Select
-            label="Type"
-            value={formData.type}
-            onChange={e => setFormData({ ...formData, type: e.target.value as MorphemeType })}
-            options={formTypeOptions}
-          />
+          {!isAddingVariant && (
+            <Select
+              label="Type"
+              value={formData.type}
+              onChange={e => setFormData({ ...formData, type: e.target.value as MorphemeType })}
+              options={formTypeOptions}
+            />
+          )}
 
-          <Input
-            label="Meaning"
-            value={formData.meaning}
-            onChange={e => setFormData({ ...formData, meaning: e.target.value })}
-            placeholder="e.g., say, speak"
-            required
-          />
+          {!isAddingVariant && (
+            <Input
+              label="Meaning"
+              value={formData.meaning}
+              onChange={e => setFormData({ ...formData, meaning: e.target.value })}
+              placeholder="e.g., say, speak"
+              required
+            />
+          )}
 
           <Input
             label="Origin"
@@ -220,6 +320,15 @@ export default function AdminMorphemes() {
             onChange={e => setFormData({ ...formData, origin: e.target.value })}
             placeholder="e.g., Latin, Greek"
           />
+
+          {!isAddingVariant && formData.type === 'prefix' && !selectedMorpheme?.canonicalId && (
+            <Select
+              label="Canonical Form (if this is a variant)"
+              value={formData.canonicalId?.toString() || ''}
+              onChange={e => setFormData({ ...formData, canonicalId: e.target.value ? parseInt(e.target.value) : null })}
+              options={[{ value: '', label: 'None (this is a canonical form)' }, ...canonicalPrefixes.filter(p => p.value !== selectedMorpheme?.id.toString())]}
+            />
+          )}
 
           <div className="admin-form__actions">
             <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>

@@ -79,7 +79,7 @@ wordsRouter.get('/', authenticate, async (req: AuthRequest, res: Response, next)
     // Get morphemes for all words
     const morphemes = wordIds.length > 0
       ? await query<MorphemeWithRelation & { wordId: number }>(
-          `SELECT m.id, m.morpheme, m.type, m.meaning, m.origin, m.created_at as "createdAt",
+          `SELECT m.id, m.morpheme, m.type, m.meaning, m.origin, m.canonical_id as "canonicalId", m.created_at as "createdAt",
                   wm.word_id as "wordId", wm.position
            FROM morphemes m
            JOIN word_morphemes wm ON m.id = wm.morpheme_id
@@ -144,7 +144,7 @@ wordsRouter.get('/:id', authenticate, async (req: AuthRequest, res: Response, ne
     );
 
     const morphemes = await query<MorphemeWithRelation>(
-      `SELECT m.id, m.morpheme, m.type, m.meaning, m.origin, m.created_at as "createdAt", wm.position
+      `SELECT m.id, m.morpheme, m.type, m.meaning, m.origin, m.canonical_id as "canonicalId", m.created_at as "createdAt", wm.position
        FROM morphemes m
        JOIN word_morphemes wm ON m.id = wm.morpheme_id
        WHERE wm.word_id = $1

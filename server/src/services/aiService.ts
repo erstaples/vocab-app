@@ -391,3 +391,151 @@ export function getTokensUsed(): number {
   // For now, returning 0 as a placeholder
   return 0;
 }
+
+// Morpheme audit types
+export interface MorphemeAuditSuggestion {
+  text: string;
+  type: MorphemeType;
+  meaning: string;
+  origin?: string;
+  canonicalForm?: string; // If this is a variant, what's the canonical form
+  isVariant: boolean;
+}
+
+export interface WordAuditResult {
+  wordId: number;
+  word: string;
+  currentMorphemes: Array<{ id: number; morpheme: string; type: string; meaning: string; canonicalId?: number | null }>;
+  suggestedMorphemes: MorphemeAuditSuggestion[];
+  hasDiscrepancy: boolean;
+  discrepancyType?: 'missing' | 'incorrect' | 'extra' | 'order' | 'variant';
+  notes?: string;
+}
+
+export async function auditWordMorphemes(
+  words: Array<{
+    id: number;
+    word: string;
+    currentMorphemes: Array<{ id: number; morpheme: string; type: string; meaning: string; canonicalId?: number | null }>;
+  }>,
+  existingMorphemes: Array<{ id: number; morpheme: string; type: string; meaning: string; canonicalId?: number | null }>
+): Promise<WordAuditResult[]> {
+  if (!anthropicClient) {
+    throw new Error('AI service not configured');
+  }
+
+  // Build a map of canonical morphemes and their variants for the prompt
+  const canonicalMap = new Map<number, { morpheme: string; variants: string[] }>();
+  existingMorphemes.forEach(m => {
+    if (!m.canonicalId) {
+      canonicalMap.set(m.id, { morpheme: m.morpheme, variants: [] });
+    }
+  });
+  existingMorphemes.forEach(m => {
+    if (m.canonicalId && canonicalMap.has(m.canonicalId)) {
+      canonicalMap.get(m.canonicalId)!.variants.push(m.morpheme);
+    }
+  });
+
+  const variantInfo = Array.from(canonicalMap.entries())
+    .filter(([_, v]) => v.variants.length > 0)
+    .map(([_, v]) => `${v.morpheme} has variants: ${v.variants.join(', ')}`)
+    .join('\n');
+
+  const wordsInfo = words.map(w => ({
+    id: w.id,
+    word: w.word,
+    currentMorphemes: w.currentMorphemes.map(m => m.morpheme).join(' + '),
+  }));
+
+  const prompt = `Analyze these words and their current morpheme breakdowns. Check for errors and suggest corrections.
+
+IMPORTANT CONTEXT - Prefix Assimilation Variants:
+Some prefixes change form based on the following consonant. These variants are stored separately in our database.
+${variantInfo || 'No variants defined yet.'}
+
+Common assimilation patterns to look for:
+- ad- (to, toward) → ac-, af-, ag-, al-, an-, ap-, ar-, as-, at- before c, f, g, l, n, p, r, s, t
+- com- (with, together) → col-, con-, cor- before l, n, r
+- in- (not, into) → il-, im-, ir- before l, m/b/p, r
+- ob- (against) → oc-, of-, op- before c, f, p
+- sub- (under) → suc-, suf-, sug-, sup-, sur-, sus- before c, f, g, p, r, s
+- syn- (together) → syl-, sym-, sys- before l, m/b/p, s
+
+Words to analyze:
+${JSON.stringify(wordsInfo, null, 2)}
+
+For each word, return your analysis in this JSON format:
+{
+  "results": [
+    {
+      "wordId": number,
+      "word": "the word",
+      "suggestedMorphemes": [
+        {
+          "text": "morpheme with hyphen",
+          "type": "prefix" | "root" | "suffix",
+          "meaning": "meaning",
+          "origin": "Latin" | "Greek" | etc,
+          "canonicalForm": "if this is a variant like 'as-', put the canonical 'ad-' here, otherwise null",
+          "isVariant": true | false
+        }
+      ],
+      "hasDiscrepancy": true | false,
+      "discrepancyType": "missing" | "incorrect" | "extra" | "order" | "variant" | null,
+      "notes": "explanation of what's wrong and how to fix it, or null if correct"
+    }
+  ]
+}
+
+Rules:
+- IMPORTANT: Format morphemes with hyphens: prefixes end with hyphen (pre-), suffixes start with hyphen (-tion), roots have no hyphens
+- Mark isVariant: true if the morpheme is an assimilated form of a canonical prefix
+- If a word uses a variant form (like "as-" in "assiduous"), the canonicalForm should be the base form ("ad-")
+- hasDiscrepancy should be true if the current breakdown differs from your suggestion
+- discrepancyType categories:
+  - "missing": morpheme(s) are missing from current breakdown
+  - "incorrect": wrong morpheme identified (e.g., wrong root)
+  - "extra": extra morpheme that shouldn't be there
+  - "order": morphemes in wrong order
+  - "variant": using canonical form instead of variant or vice versa
+- Some words genuinely have no standard morpheme breakdown - note this in the notes field
+
+Return ONLY the JSON object, no additional text.`;
+
+  const response = await anthropicClient.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const content = response.content[0];
+  if (content.type !== 'text') {
+    throw new Error('Unexpected response type from AI');
+  }
+
+  try {
+    const parsed = JSON.parse(content.text);
+    return parsed.results.map((r: {
+      wordId: number;
+      word: string;
+      suggestedMorphemes: MorphemeAuditSuggestion[];
+      hasDiscrepancy: boolean;
+      discrepancyType?: string;
+      notes?: string;
+    }) => {
+      const originalWord = words.find(w => w.id === r.wordId);
+      return {
+        wordId: r.wordId,
+        word: r.word,
+        currentMorphemes: originalWord?.currentMorphemes || [],
+        suggestedMorphemes: r.suggestedMorphemes,
+        hasDiscrepancy: r.hasDiscrepancy,
+        discrepancyType: r.discrepancyType as WordAuditResult['discrepancyType'],
+        notes: r.notes,
+      };
+    });
+  } catch (error) {
+    throw new Error(`Failed to parse AI response: ${content.text}`);
+  }
+}

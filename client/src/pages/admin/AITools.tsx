@@ -9,11 +9,13 @@ import type {
   DefinitionData,
   WordFamilyData,
   PartOfSpeech,
+  WordAuditResult,
 } from '@vocab-builder/shared';
+import { MorphemeChip } from '../../components/admin/MorphemeChip';
 import './Admin.css';
 import './AITools.css';
 
-type ActiveTab = 'config' | 'analyzer' | 'suggester' | 'definition' | 'family' | 'history';
+type ActiveTab = 'config' | 'analyzer' | 'suggester' | 'definition' | 'family' | 'audit' | 'history';
 
 export default function AITools() {
   const {
@@ -38,6 +40,15 @@ export default function AITools() {
     setPreview,
     fetchAIHistory,
     clearError,
+    auditResults,
+    auditTotal,
+    auditDiscrepancyCount,
+    isAuditing,
+    isApplyingBulkFixes,
+    runAudit,
+    applyAuditFix,
+    applyAllAuditFixes,
+    clearAuditResults,
   } = useAdminStore();
 
   const { morphemes, fetchMorphemes, words, fetchWords, createWord } = useWordStore();
@@ -79,10 +90,41 @@ export default function AITools() {
     exampleSentence: '',
   });
 
+  // Audit state
+  const [auditBatchSize, setAuditBatchSize] = useState(10);
+  const [expandedAuditResult, setExpandedAuditResult] = useState<number | null>(null);
+
   useEffect(() => {
     checkAIConfig();
     fetchMorphemes();
     fetchWords(1);
+
+    // Load persisted audit results from localStorage
+    const savedAuditData = localStorage.getItem('vocab-builder-audit-results');
+    if (savedAuditData) {
+      try {
+        const data = JSON.parse(savedAuditData);
+        // Only restore if data is less than 24 hours old
+        const timestamp = new Date(data.timestamp);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - timestamp.getTime()) / (1000 * 60 * 60);
+
+        if (hoursDiff < 24) {
+          // Use the store's setter directly to restore the results
+          useAdminStore.setState({
+            auditResults: data.results || [],
+            auditTotal: data.total || 0,
+            auditDiscrepancyCount: data.discrepancyCount || 0,
+          });
+        } else {
+          // Clear old data
+          localStorage.removeItem('vocab-builder-audit-results');
+        }
+      } catch (error) {
+        console.error('Failed to load persisted audit results:', error);
+        localStorage.removeItem('vocab-builder-audit-results');
+      }
+    }
   }, [checkAIConfig, fetchMorphemes, fetchWords]);
 
   useEffect(() => {
@@ -286,6 +328,7 @@ export default function AITools() {
     { id: 'suggester', label: 'Word Suggester', requiresConfig: true },
     { id: 'definition', label: 'Definition Generator', requiresConfig: true },
     { id: 'family', label: 'Family Builder', requiresConfig: true },
+    { id: 'audit', label: 'Morpheme Audit', requiresConfig: true },
     { id: 'history', label: 'History' },
   ];
 
@@ -575,6 +618,163 @@ export default function AITools() {
                   selectedItems={selectedFamilyWords}
                   onToggleItem={toggleFamilyWordSelection}
                 />
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Morpheme Audit Tab */}
+        {activeTab === 'audit' && (
+          <Card className="ai-tools__section">
+            <h3>Morpheme Audit</h3>
+            <p className="ai-tools__description">
+              Analyze words for morpheme errors including incorrect breakdowns, missing variants,
+              and assimilation issues. The AI will compare current morpheme associations with
+              its analysis and flag discrepancies.
+            </p>
+
+            <div className="ai-tools__form">
+              <div className="ai-tools__form-row">
+                <Select
+                  label="Batch Size"
+                  value={auditBatchSize.toString()}
+                  onChange={e => setAuditBatchSize(parseInt(e.target.value))}
+                  options={[
+                    { value: '5', label: '5 words' },
+                    { value: '10', label: '10 words' },
+                    { value: '20', label: '20 words' },
+                    { value: '50', label: '50 words' },
+                  ]}
+                />
+                <Button
+                  onClick={() => runAudit(undefined, auditBatchSize)}
+                  isLoading={isAuditing}
+                >
+                  Run Audit
+                </Button>
+                {auditResults.length > 0 && (
+                  <Button variant="ghost" onClick={clearAuditResults}>
+                    Clear Results
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {auditResults.length > 0 && (
+              <div className="ai-tools__audit-results">
+                <div className="ai-tools__audit-summary">
+                  <span>Analyzed: <strong>{auditTotal}</strong> words</span>
+                  <span>Discrepancies: <strong className={auditDiscrepancyCount > 0 ? 'ai-tools__audit-warning' : ''}>{auditDiscrepancyCount}</strong></span>
+                  {auditDiscrepancyCount > 0 && (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={async () => {
+                        try {
+                          const { applied, failed } = await applyAllAuditFixes();
+                          if (failed > 0) {
+                            alert(`Applied ${applied} fixes successfully. ${failed} fixes failed.`);
+                          }
+                        } catch (error) {
+                          console.error('Failed to apply all fixes:', error);
+                        }
+                      }}
+                      isLoading={isApplyingBulkFixes}
+                    >
+                      Apply All Fixes
+                    </Button>
+                  )}
+                </div>
+
+                <div className="ai-tools__audit-list">
+                  {auditResults.filter(r => r.hasDiscrepancy).map(result => (
+                    <div key={result.wordId} className="ai-tools__audit-item">
+                      <div
+                        className="ai-tools__audit-item-header"
+                        onClick={() => setExpandedAuditResult(expandedAuditResult === result.wordId ? null : result.wordId)}
+                      >
+                        <span className="ai-tools__audit-word">{result.word}</span>
+                        <Badge variant="warning" size="sm">{result.discrepancyType}</Badge>
+                        <span className="ai-tools__audit-expand">{expandedAuditResult === result.wordId ? '▼' : '▶'}</span>
+                      </div>
+
+                      {expandedAuditResult === result.wordId && (
+                        <div className="ai-tools__audit-item-details">
+                          {result.notes && (
+                            <div className="ai-tools__audit-notes">{result.notes}</div>
+                          )}
+
+                          <div className="ai-tools__audit-comparison">
+                            <div className="ai-tools__audit-current">
+                              <h5>Current Morphemes</h5>
+                              <div className="ai-tools__audit-morphemes">
+                                {result.currentMorphemes.length === 0 ? (
+                                  <span className="ai-tools__audit-none">None</span>
+                                ) : (
+                                  result.currentMorphemes.map(m => (
+                                    <MorphemeChip
+                                      key={m.id}
+                                      morpheme={{ ...m, type: m.type as 'prefix' | 'root' | 'suffix', createdAt: new Date() }}
+                                      allMorphemes={morphemes}
+                                      size="sm"
+                                    />
+                                  ))
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="ai-tools__audit-arrow">→</div>
+
+                            <div className="ai-tools__audit-suggested">
+                              <h5>Suggested Morphemes</h5>
+                              <div className="ai-tools__audit-morphemes">
+                                {result.suggestedMorphemes.map((m, i) => (
+                                  <div key={i} className="ai-tools__audit-suggested-morpheme">
+                                    <Badge
+                                      variant={m.isVariant ? 'warning' : m.type === 'prefix' ? 'primary' : m.type === 'root' ? 'success' : 'secondary'}
+                                      size="sm"
+                                    >
+                                      {m.text}
+                                    </Badge>
+                                    <span className="ai-tools__audit-meaning">"{m.meaning}"</span>
+                                    {m.isVariant && m.canonicalForm && (
+                                      <span className="ai-tools__audit-variant-info">variant of {m.canonicalForm}</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="ai-tools__audit-actions">
+                            <Button
+                              size="sm"
+                              onClick={() => applyAuditFix(result.wordId, result.suggestedMorphemes)}
+                            >
+                              Apply Fix
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                // Skip this word (remove from results without fixing)
+                                clearAuditResults();
+                              }}
+                            >
+                              Skip
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {auditResults.filter(r => r.hasDiscrepancy).length === 0 && (
+                    <div className="ai-tools__audit-success">
+                      All analyzed words have correct morpheme associations.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </Card>

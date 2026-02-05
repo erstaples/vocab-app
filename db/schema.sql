@@ -60,12 +60,19 @@ CREATE TABLE definitions (
 -- Morphemes table (prefixes, roots, suffixes)
 CREATE TABLE morphemes (
     id SERIAL PRIMARY KEY,
-    morpheme VARCHAR(50) UNIQUE NOT NULL,
+    morpheme VARCHAR(50) NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('prefix', 'root', 'suffix')),
     meaning VARCHAR(255) NOT NULL,
     origin VARCHAR(50),
+    canonical_id INTEGER REFERENCES morphemes(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Unique constraint on morpheme + origin (allows same morpheme with different origins, e.g., "a-" Greek vs Latin)
+CREATE UNIQUE INDEX idx_morphemes_morpheme_origin ON morphemes (morpheme, COALESCE(origin, ''));
+
+-- Index for efficient lookups of variants by canonical morpheme
+CREATE INDEX idx_morphemes_canonical_id ON morphemes(canonical_id) WHERE canonical_id IS NOT NULL;
 
 -- Word-Morpheme junction table
 CREATE TABLE word_morphemes (

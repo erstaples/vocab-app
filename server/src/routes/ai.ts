@@ -709,3 +709,323 @@ aiRouter.get('/history', async (req: AuthRequest, res: Response, next) => {
     next(error);
   }
 });
+
+// POST /api/admin/ai/audit - Audit words for morpheme errors
+aiRouter.post('/audit', async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { wordIds, batchSize = 10 } = req.body;
+
+    // Get words to audit - either specified IDs or all words with morphemes
+    let wordsQuery: string;
+    let wordsParams: unknown[];
+
+    if (wordIds && Array.isArray(wordIds) && wordIds.length > 0) {
+      wordsQuery = `
+        SELECT w.id, w.word
+        FROM words w
+        WHERE w.id = ANY($1)
+        ORDER BY w.word
+        LIMIT $2
+      `;
+      wordsParams = [wordIds, batchSize];
+    } else {
+      // Get words that have morpheme associations (prioritize those for audit)
+      wordsQuery = `
+        SELECT DISTINCT w.id, w.word
+        FROM words w
+        JOIN word_morphemes wm ON w.id = wm.word_id
+        ORDER BY w.word
+        LIMIT $1
+      `;
+      wordsParams = [batchSize];
+    }
+
+    const words = await query<{ id: number; word: string }>(wordsQuery, wordsParams);
+
+    if (words.length === 0) {
+      return res.json({ results: [], total: 0, message: 'No words to audit' });
+    }
+
+    // Get current morphemes for each word
+    const wordIdsArray = words.map(w => w.id);
+    const currentMorphemes = await query<{
+      wordId: number;
+      id: number;
+      morpheme: string;
+      type: string;
+      meaning: string;
+      canonicalId: number | null;
+      position: number;
+    }>(
+      `SELECT wm.word_id as "wordId", m.id, m.morpheme, m.type, m.meaning, m.canonical_id as "canonicalId", wm.position
+       FROM word_morphemes wm
+       JOIN morphemes m ON wm.morpheme_id = m.id
+       WHERE wm.word_id = ANY($1)
+       ORDER BY wm.word_id, wm.position`,
+      [wordIdsArray]
+    );
+
+    // Get all morphemes for context (including variants)
+    const allMorphemes = await query<{
+      id: number;
+      morpheme: string;
+      type: string;
+      meaning: string;
+      canonicalId: number | null;
+    }>(
+      'SELECT id, morpheme, type, meaning, canonical_id as "canonicalId" FROM morphemes ORDER BY morpheme'
+    );
+
+    // Build the words data for AI
+    const wordsForAudit = words.map(w => ({
+      id: w.id,
+      word: w.word,
+      currentMorphemes: currentMorphemes
+        .filter(m => m.wordId === w.id)
+        .map(m => ({
+          id: m.id,
+          morpheme: m.morpheme,
+          type: m.type,
+          meaning: m.meaning,
+          canonicalId: m.canonicalId,
+        })),
+    }));
+
+    // Log the operation
+    const logEntry = await queryOne<{ id: number }>(
+      `INSERT INTO ai_generation_log (admin_user_id, operation_type, input_data, status, provider, model)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id`,
+      [
+        req.user!.id,
+        'morpheme-audit',
+        JSON.stringify({ wordCount: words.length, wordIds: wordIdsArray }),
+        'processing',
+        'anthropic',
+        'claude-sonnet-4-20250514',
+      ]
+    );
+
+    try {
+      const auditResults = await aiService.auditWordMorphemes(wordsForAudit, allMorphemes);
+
+      // Filter to only words with discrepancies
+      const discrepancies = auditResults.filter(r => r.hasDiscrepancy);
+
+      // Update log with success
+      await execute(
+        `UPDATE ai_generation_log SET status = $1, output_data = $2, processed_at = NOW()
+         WHERE id = $3`,
+        ['completed', JSON.stringify({ discrepancyCount: discrepancies.length }), logEntry?.id]
+      );
+
+      res.json({
+        results: auditResults,
+        total: words.length,
+        discrepancyCount: discrepancies.length,
+      });
+    } catch (error) {
+      await execute(
+        `UPDATE ai_generation_log SET status = $1, error_message = $2, processed_at = NOW()
+         WHERE id = $3`,
+        ['failed', error instanceof Error ? error.message : 'Unknown error', logEntry?.id]
+      );
+      throw error;
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/ai/apply-audit-fix - Apply a single audit fix
+aiRouter.post('/apply-audit-fix', async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { wordId, suggestedMorphemes } = req.body;
+
+    if (!wordId || !suggestedMorphemes) {
+      throw createError('wordId and suggestedMorphemes are required', 400);
+    }
+
+    const morphemeIds: number[] = [];
+
+    for (const m of suggestedMorphemes) {
+      // Try to find existing morpheme (exact match or canonical form)
+      let morpheme = await queryOne<{ id: number }>(
+        'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1)',
+        [m.text]
+      );
+
+      if (!morpheme && m.canonicalForm) {
+        // If it's a variant and doesn't exist, create it linked to canonical
+        const canonical = await queryOne<{ id: number }>(
+          'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1)',
+          [m.canonicalForm]
+        );
+
+        if (canonical) {
+          morpheme = await queryOne<{ id: number }>(
+            `INSERT INTO morphemes (morpheme, type, meaning, origin, canonical_id)
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (morpheme, COALESCE(origin, ''))
+             DO UPDATE SET morpheme = EXCLUDED.morpheme
+             RETURNING id`,
+            [m.text, m.type, m.meaning, m.origin || null, canonical.id]
+          );
+        }
+      }
+
+      if (!morpheme) {
+        // Create new morpheme without canonical link
+        // Use ON CONFLICT with proper constraint specification
+        morpheme = await queryOne<{ id: number }>(
+          `INSERT INTO morphemes (morpheme, type, meaning, origin)
+           VALUES ($1, $2, $3, $4)
+           ON CONFLICT (morpheme, COALESCE(origin, ''))
+           DO UPDATE SET morpheme = EXCLUDED.morpheme
+           RETURNING id`,
+          [m.text, m.type, m.meaning, m.origin || null]
+        );
+
+        // Fallback: If insert somehow failed, try to get the existing one
+        if (!morpheme) {
+          morpheme = await queryOne<{ id: number }>(
+            'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1) AND COALESCE(origin, \'\') = COALESCE($2, \'\')',
+            [m.text, m.origin || null]
+          );
+        }
+      }
+
+      if (morpheme) {
+        morphemeIds.push(morpheme.id);
+      }
+    }
+
+    // Clear existing associations and create new ones
+    await execute('DELETE FROM word_morphemes WHERE word_id = $1', [wordId]);
+
+    for (let i = 0; i < morphemeIds.length; i++) {
+      await execute(
+        'INSERT INTO word_morphemes (word_id, morpheme_id, position) VALUES ($1, $2, $3)',
+        [wordId, morphemeIds[i], i]
+      );
+    }
+
+    res.json({
+      success: true,
+      wordId,
+      morphemeCount: morphemeIds.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/ai/apply-audit-fixes - Apply multiple audit fixes at once
+aiRouter.post('/apply-audit-fixes', async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { fixes } = req.body;
+
+    if (!fixes || !Array.isArray(fixes) || fixes.length === 0) {
+      throw createError('fixes array is required', 400);
+    }
+
+    const results = [];
+    const errors = [];
+
+    // Process each fix in a transaction for atomicity
+    for (const fix of fixes) {
+      try {
+        const { wordId, suggestedMorphemes } = fix;
+
+        if (!wordId || !suggestedMorphemes) {
+          errors.push({ wordId, error: 'Missing wordId or suggestedMorphemes' });
+          continue;
+        }
+
+        const morphemeIds: number[] = [];
+
+        for (const m of suggestedMorphemes) {
+          // Try to find existing morpheme (exact match or canonical form)
+          let morpheme = await queryOne<{ id: number }>(
+            'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1)',
+            [m.text]
+          );
+
+          if (!morpheme && m.canonicalForm) {
+            // If it's a variant and doesn't exist, create it linked to canonical
+            const canonical = await queryOne<{ id: number }>(
+              'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1)',
+              [m.canonicalForm]
+            );
+
+            if (canonical) {
+              morpheme = await queryOne<{ id: number }>(
+                `INSERT INTO morphemes (morpheme, type, meaning, origin, canonical_id)
+                 VALUES ($1, $2, $3, $4, $5)
+                 ON CONFLICT (morpheme, COALESCE(origin, ''))
+                 DO UPDATE SET morpheme = EXCLUDED.morpheme
+                 RETURNING id`,
+                [m.text, m.type, m.meaning, m.origin || null, canonical.id]
+              );
+            }
+          }
+
+          if (!morpheme) {
+            // Create new morpheme without canonical link
+            morpheme = await queryOne<{ id: number }>(
+              `INSERT INTO morphemes (morpheme, type, meaning, origin)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (morpheme, COALESCE(origin, ''))
+               DO UPDATE SET morpheme = EXCLUDED.morpheme
+               RETURNING id`,
+              [m.text, m.type, m.meaning, m.origin || null]
+            );
+
+            // Fallback: If insert somehow failed, try to get the existing one
+            if (!morpheme) {
+              morpheme = await queryOne<{ id: number }>(
+                'SELECT id FROM morphemes WHERE LOWER(morpheme) = LOWER($1) AND COALESCE(origin, \'\') = COALESCE($2, \'\')',
+                [m.text, m.origin || null]
+              );
+            }
+          }
+
+          if (morpheme) {
+            morphemeIds.push(morpheme.id);
+          }
+        }
+
+        // Clear existing associations and create new ones
+        await execute('DELETE FROM word_morphemes WHERE word_id = $1', [wordId]);
+
+        for (let i = 0; i < morphemeIds.length; i++) {
+          await execute(
+            'INSERT INTO word_morphemes (word_id, morpheme_id, position) VALUES ($1, $2, $3)',
+            [wordId, morphemeIds[i], i]
+          );
+        }
+
+        results.push({
+          wordId,
+          success: true,
+          morphemeCount: morphemeIds.length,
+        });
+      } catch (error: any) {
+        errors.push({
+          wordId: fix.wordId,
+          error: error.message || 'Unknown error',
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      applied: results.length,
+      failed: errors.length,
+      results,
+      errors,
+    });
+  } catch (error) {
+    next(error);
+  }
+});

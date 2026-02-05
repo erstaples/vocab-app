@@ -1,0 +1,89 @@
+.morpheme-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.morpheme-chip--clickable {
+  cursor: pointer;
+}
+
+.morpheme-chip__meaning {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tooltip */
+.morpheme-chip__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  max-width: 280px;
+  padding: 0.75rem;
+  background: var(--color-gray-900);
+  color: var(--color-white);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.morpheme-chip__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-gray-900);
+}
+
+.morpheme-chip__tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.morpheme-chip__tooltip-morpheme {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+
+.morpheme-chip__tooltip-type {
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.morpheme-chip__tooltip-meaning {
+  color: var(--color-gray-300);
+  margin-bottom: 0.25rem;
+}
+
+.morpheme-chip__tooltip-origin {
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+}
+
+.morpheme-chip__tooltip-variant {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: var(--text-xs);
+  color: #fcd34d;
+}
+
+.morpheme-chip__tooltip-variant strong {
+  color: #fef3c7;
+}

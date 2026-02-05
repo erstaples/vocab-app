@@ -12,6 +12,9 @@ import type {
   AIGenerationLog,
   Morpheme,
   PartOfSpeech,
+  WordAuditResult,
+  AuditResponse,
+  MorphemeAuditSuggestion,
 } from '@vocab-builder/shared';
 
 export interface WordPopulateData {
@@ -49,6 +52,13 @@ interface AdminState {
   aiHistoryPage: number;
   isLoadingHistory: boolean;
 
+  // Audit
+  auditResults: WordAuditResult[];
+  auditTotal: number;
+  auditDiscrepancyCount: number;
+  isAuditing: boolean;
+  isApplyingBulkFixes: boolean;
+
   // Error state
   error: string | null;
 
@@ -73,6 +83,12 @@ interface AdminState {
   setPreview: (preview: AIPreview | null) => void;
   fetchAIHistory: (page?: number) => Promise<void>;
 
+  // Audit Actions
+  runAudit: (wordIds?: number[], batchSize?: number) => Promise<AuditResponse>;
+  applyAuditFix: (wordId: number, suggestedMorphemes: MorphemeAuditSuggestion[]) => Promise<void>;
+  applyAllAuditFixes: () => Promise<{ applied: number; failed: number }>;
+  clearAuditResults: () => void;
+
   // Utility
   clearError: () => void;
 }
@@ -95,6 +111,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   totalAiHistory: 0,
   aiHistoryPage: 1,
   isLoadingHistory: false,
+  auditResults: [],
+  auditTotal: 0,
+  auditDiscrepancyCount: 0,
+  isAuditing: false,
+  isApplyingBulkFixes: false,
   error: null,
 
   // Dashboard Actions
@@ -341,6 +362,125 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       set({ isLoadingHistory: false });
       console.error('Failed to fetch AI history:', error);
     }
+  },
+
+  // Audit Actions
+  runAudit: async (wordIds?: number[], batchSize = 10) => {
+    set({ isAuditing: true, aiError: null });
+    try {
+      const response = await api.post<AuditResponse>('/admin/ai/audit', {
+        wordIds,
+        batchSize,
+      });
+
+      // Persist to localStorage
+      const auditData = {
+        results: response.data.results,
+        total: response.data.total,
+        discrepancyCount: response.data.discrepancyCount,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem('vocab-builder-audit-results', JSON.stringify(auditData));
+
+      set({
+        auditResults: response.data.results,
+        auditTotal: response.data.total,
+        auditDiscrepancyCount: response.data.discrepancyCount,
+        isAuditing: false,
+      });
+      return response.data;
+    } catch (error) {
+      set({
+        aiError: error instanceof Error ? error.message : 'Failed to run audit',
+        isAuditing: false,
+      });
+      throw error;
+    }
+  },
+
+  applyAuditFix: async (wordId: number, suggestedMorphemes: MorphemeAuditSuggestion[]) => {
+    try {
+      await api.post('/admin/ai/apply-audit-fix', { wordId, suggestedMorphemes });
+      // Remove the fixed word from results
+      set(state => {
+        const newResults = state.auditResults.filter(r => r.wordId !== wordId);
+        const newDiscrepancyCount = Math.max(0, state.auditDiscrepancyCount - 1);
+
+        // Update localStorage
+        const auditData = {
+          results: newResults,
+          total: state.auditTotal,
+          discrepancyCount: newDiscrepancyCount,
+          timestamp: new Date().toISOString(),
+        };
+        localStorage.setItem('vocab-builder-audit-results', JSON.stringify(auditData));
+
+        return {
+          auditResults: newResults,
+          auditDiscrepancyCount: newDiscrepancyCount,
+        };
+      });
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Failed to apply fix');
+    }
+  },
+
+  applyAllAuditFixes: async () => {
+    const state = get();
+    const discrepantResults = state.auditResults.filter(r => r.hasDiscrepancy);
+
+    if (discrepantResults.length === 0) {
+      return { applied: 0, failed: 0 };
+    }
+
+    try {
+      set({ isApplyingBulkFixes: true });
+
+      const fixes = discrepantResults.map(r => ({
+        wordId: r.wordId,
+        suggestedMorphemes: r.suggestedMorphemes,
+      }));
+
+      const response = await api.post('/admin/ai/apply-audit-fixes', { fixes });
+      const { applied, failed, results, errors } = response.data;
+
+      // Remove successfully fixed words from results
+      const successfulWordIds = results.map((r: any) => r.wordId);
+      set(state => {
+        const newResults = state.auditResults.filter(r => !successfulWordIds.includes(r.wordId));
+        const newDiscrepancyCount = Math.max(0, state.auditDiscrepancyCount - applied);
+
+        // Update localStorage
+        const auditData = {
+          results: newResults,
+          total: state.auditTotal,
+          discrepancyCount: newDiscrepancyCount,
+          timestamp: new Date().toISOString(),
+        };
+        localStorage.setItem('vocab-builder-audit-results', JSON.stringify(auditData));
+
+        return {
+          auditResults: newResults,
+          auditDiscrepancyCount: newDiscrepancyCount,
+          isApplyingBulkFixes: false,
+        };
+      });
+
+      // Show any errors
+      if (errors && errors.length > 0) {
+        console.error('Failed to apply fixes for some words:', errors);
+      }
+
+      return { applied, failed };
+    } catch (error) {
+      set({ isApplyingBulkFixes: false });
+      throw error instanceof Error ? error : new Error('Failed to apply bulk fixes');
+    }
+  },
+
+  clearAuditResults: () => {
+    localStorage.removeItem('vocab-builder-audit-results');
+    set({ auditResults: [], auditTotal: 0, auditDiscrepancyCount: 0 });
   },
 
   clearError: () => set({ error: null, aiError: null }),
